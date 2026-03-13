@@ -40,8 +40,8 @@ export default function Preloader({ onFinish }) {
             className="absolute bottom-0 left-0 w-full bg-gray-400 transition-all duration-200"
             style={{
               height: `${progress}%`,
-              maskImage: "url(/logo-gray.png)",
-              WebkitMaskImage: "url(/logo-gray.png)",
+              maskImage: "url(logo.png)",
+              WebkitMaskImage: "url(logo.png)",
               maskSize: "contain",
               maskRepeat: "no-repeat",
               maskPosition: "center"
