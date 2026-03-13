@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
@@ -21,11 +20,46 @@ import Leads from "./pages/admin/Leads"
 import Insights from "./pages/admin/Insights"
 import EditProperty from "./pages/admin/EditProperty"
 import PropertiesManager from "./pages/admin/PropertiesManager"
+
 import 'swiper/css'
 import { supabase } from "./lib/supabaseClient"
 
 
-/* TRACK VISITAS DEL SITIO */
+
+/* =========================
+   PRELOADER
+========================= */
+
+function Preloader() {
+
+  return (
+
+    <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center">
+
+      <img
+        src="/logo.png"
+        alt="logo"
+        className="
+        w-[240px]
+        sm:w-[300px]
+        md:w-[380px]
+        lg:w-[440px]
+        animate-[logoFloat_2.5s_ease-in-out_infinite]
+        "
+      />
+
+    </div>
+
+  )
+
+
+}
+
+
+
+/* =========================
+   TRACK VISITAS DEL SITIO
+========================= */
 
 function TrackVisit() {
 
@@ -53,115 +87,141 @@ function TrackVisit() {
 }
 
 
-/* SCROLL TOP AL CAMBIAR PAGINA */
+
+/* =========================
+   SCROLL TOP
+========================= */
 
 const ScrollToTop = () => {
 
-const { pathname } = useLocation()
+  const { pathname } = useLocation()
 
-useEffect(()=>{
-window.scrollTo(0,0)
-},[pathname])
+  useEffect(()=>{
+    window.scrollTo(0,0)
+  },[pathname])
 
-return null
+  return null
 
 }
 
 
-/* LAYOUT PUBLICO */
+
+/* =========================
+   LAYOUT PUBLICO
+========================= */
 
 function PublicLayout(){
 
-return(
+  return(
 
-<div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen">
 
-<TrackVisit/>
+      <TrackVisit/>
 
-<Navbar/>
+      <Navbar/>
 
-<main className="flex-grow">
+      <main className="flex-grow">
 
-<Routes>
+        <Routes>
 
-<Route path="/" element={<Home/>} />
+          <Route path="/" element={<Home/>} />
+          <Route path="/propiedades" element={<Catalog/>} />
+          <Route path="/propiedades/:id" element={<PropertyDetail/>} />
+          <Route path="/tasaciones" element={<Tasaciones/>} />
+          <Route path="/proyectos" element={<Proyectos/>} />
+          <Route path="/nosotros" element={<Nosotros/>} />
+          <Route path="/contacto" element={<Contacto/>} />
 
-<Route path="/propiedades" element={<Catalog/>} />
+        </Routes>
 
-<Route path="/propiedades/:id" element={<PropertyDetail/>} />
+      </main>
 
-<Route path="/tasaciones" element={<Tasaciones/>} />
+      <Footer/>
 
-<Route path="/proyectos" element={<Proyectos/>} />
+      <WhatsAppButton/>
 
-<Route path="/nosotros" element={<Nosotros/>} />
+    </div>
 
-<Route path="/contacto" element={<Contacto/>} />
-
-</Routes>
-
-</main>
-
-<Footer/>
-
-<WhatsAppButton/>
-
-</div>
-
-)
+  )
 
 }
 
 
 
-/* APP PRINCIPAL */
+/* =========================
+   APP PRINCIPAL
+========================= */
 
 export default function App(){
 
-useEffect(()=>{
-
-AOS.init({
-duration:1000,
-once:true,
-easing:'ease-out-cubic'
-})
-
-},[])
-
-return(
-
-<Router>
-
-<ScrollToTop/>
-
-<Routes>
-
-{/* WEB NORMAL */}
-
-<Route path="/*" element={<PublicLayout/>} />
+  const [loading,setLoading] = useState(true)
 
 
-{/* ADMIN (SIN NAVBAR NI FOOTER) */}
 
-<Route path="/admin/login" element={<Login/>} />
+  /* PRELOADER TIMER */
 
-<Route path="/admin/dashboard" element={<Dashboard/>} />
+  useEffect(()=>{
 
-<Route path="/admin/new" element={<NewProperty/>} />
+    const timer = setTimeout(()=>{
+      setLoading(false)
+    },3000)
 
-<Route path="/admin/leads" element={<Leads/>} />
+    return ()=> clearTimeout(timer)
 
-<Route path="/admin/insights" element={<Insights/>} />
-
-<Route path="/admin/edit/:id" element={<EditProperty />} />
-
-<Route path="/admin/properties" element={<PropertiesManager />} />
+  },[])
 
 
-</Routes>
 
-</Router>
+  /* AOS SOLO CUANDO TERMINA EL PRELOADER */
 
-)
+  useEffect(()=>{
+
+    if(!loading){
+
+      AOS.init({
+        duration:1000,
+        once:true,
+        easing:'ease-out-cubic'
+      })
+
+    }
+
+  },[loading])
+
+
+
+  return(
+
+    <>
+
+      {/* PRELOADER ENCIMA DE TODO */}
+      {loading && <Preloader/>}
+
+      <Router>
+
+        <ScrollToTop/>
+
+        <Routes>
+
+          {/* WEB NORMAL */}
+          <Route path="/*" element={<PublicLayout/>} />
+
+          {/* ADMIN (SIN NAVBAR NI FOOTER) */}
+
+          <Route path="/admin/login" element={<Login/>} />
+          <Route path="/admin/dashboard" element={<Dashboard/>} />
+          <Route path="/admin/new" element={<NewProperty/>} />
+          <Route path="/admin/leads" element={<Leads/>} />
+          <Route path="/admin/insights" element={<Insights/>} />
+          <Route path="/admin/edit/:id" element={<EditProperty />} />
+          <Route path="/admin/properties" element={<PropertiesManager />} />
+
+        </Routes>
+
+      </Router>
+
+    </>
+
+  )
 
 }
