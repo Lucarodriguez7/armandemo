@@ -37,7 +37,7 @@ function Preloader() {
     <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center">
 
       <img
-        src="/logo.png"
+        src="logo.png"
         alt="logo"
         className="
         w-[240px]
