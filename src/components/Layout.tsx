@@ -18,6 +18,8 @@ export const Navbar = () => {
   const location = useLocation();
   const isHome = location.pathname === "/";
 
+  /* Detect scroll */
+
   useEffect(()=>{
 
     const handleScroll = () => {
@@ -29,6 +31,12 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll",handleScroll);
 
   },[]);
+
+  /* Cerrar menu al cambiar de pagina */
+
+  useEffect(()=>{
+    setIsOpen(false);
+  },[location.pathname]);
 
   const navLinks = [
     { name:"Inicio",path:"/" },
@@ -120,7 +128,7 @@ className="md:hidden text-white"
 <div
 onClick={()=>setIsOpen(false)}
 className={cn(
-"fixed inset-0 bg-black/40 z-40 transition-opacity duration-300",
+"fixed inset-0 bg-black/50 z-40 transition-opacity duration-300",
 isOpen ? "opacity-100 visible" : "opacity-0 invisible"
 )}
 />
