@@ -32,11 +32,37 @@ export const Navbar = () => {
 
   },[]);
 
-  /* Cerrar menu al cambiar de pagina */
+  /* Cerrar menu al cambiar pagina */
 
   useEffect(()=>{
     setIsOpen(false);
   },[location.pathname]);
+
+  /* Bloquear scroll cuando el menu abre */
+
+  useEffect(()=>{
+
+    if(isOpen){
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+  },[isOpen]);
+
+  /* Cerrar con ESC */
+
+  useEffect(()=>{
+
+    const esc = (e:KeyboardEvent)=>{
+      if(e.key === "Escape") setIsOpen(false);
+    };
+
+    window.addEventListener("keydown",esc);
+
+    return ()=>window.removeEventListener("keydown",esc);
+
+  },[]);
 
   const navLinks = [
     { name:"Inicio",path:"/" },
@@ -54,9 +80,10 @@ export const Navbar = () => {
 
   return(
 
+<>
 <nav
 className={cn(
-"fixed top-0 left-0 w-full z-50 h-20 flex items-center transition-all duration-300",
+"fixed top-0 left-0 w-full z-40 h-20 flex items-center transition-all duration-300",
 navbarBackground
 )}
 >
@@ -123,12 +150,14 @@ className="md:hidden text-white"
 
 </div>
 
+</nav>
+
 {/* OVERLAY */}
 
 <div
 onClick={()=>setIsOpen(false)}
 className={cn(
-"fixed inset-0 bg-black/50 z-40 transition-opacity duration-300",
+"fixed inset-0 bg-black/60 z-50 transition-opacity duration-300",
 isOpen ? "opacity-100 visible" : "opacity-0 invisible"
 )}
 />
@@ -137,7 +166,7 @@ isOpen ? "opacity-100 visible" : "opacity-0 invisible"
 
 <div
 className={cn(
-"fixed top-0 right-0 h-full w-[280px] bg-[#1f1f1f] z-50 shadow-2xl transform transition-transform duration-300",
+"fixed top-0 right-0 h-screen w-[280px] bg-[#1f1f1f] z-[60] shadow-2xl transform transition-transform duration-300",
 isOpen ? "translate-x-0" : "translate-x-full"
 )}
 >
@@ -178,7 +207,7 @@ className="text-white text-lg font-medium hover:opacity-70 transition"
 
 </div>
 
-</nav>
+</>
 
 );
 
