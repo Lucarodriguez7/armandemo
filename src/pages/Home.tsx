@@ -148,18 +148,21 @@ const Home = () => {
 
   return (
     <div className="overflow-hidden">
-
-    {/* Hero Section */}
-<section className="relative min-h-[calc(100vh-80px)] pt-20 flex items-center justify-center overflow-hidden">
+{/* Hero Section */}
+<section className="relative h-[78vh] pt-20 flex items-center justify-center overflow-hidden">
 
   {/* Background */}
   <div className="absolute inset-0">
 
-    <img
-      src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"
-      alt="Hero Background"
+    <video
       className="w-full h-full object-cover"
-    />
+      autoPlay
+      muted
+      loop
+      playsInline
+    >
+      <source src="/videos/hero.mp4" type="video/mp4" />
+    </video>
 
     <div className="absolute inset-0 bg-black/40"></div>
 
@@ -169,11 +172,11 @@ const Home = () => {
 
 
   {/* CONTENT */}
-  <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
+  <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
 
     <h1
       data-aos="fade-up"
-      className="text-white text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]"
+      className="text-white text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
     >
       Transformando la experiencia <br/>
       <span className="text-white/80">inmobiliaria</span>
@@ -182,7 +185,7 @@ const Home = () => {
     <p
       data-aos="fade-up"
       data-aos-delay="100"
-      className="text-white/80 text-lg md:text-xl mt-6 max-w-2xl mx-auto"
+      className="text-white/80 text-base md:text-lg mt-4 max-w-xl mx-auto"
     >
       Encontrá la propiedad ideal con un servicio profesional,
       transparente y enfocado en resultados.
@@ -193,7 +196,7 @@ const Home = () => {
     <div
       data-aos="fade-up"
       data-aos-delay="200"
-      className="mt-14 md:mt-16"
+      className="mt-8 md:mt-10"
     >
 
       <div
@@ -204,7 +207,7 @@ const Home = () => {
         shadow-[0_20px_60px_rgba(0,0,0,0.35)]
         rounded-2xl md:rounded-full
         p-2
-        max-w-5xl
+        max-w-4xl
         mx-auto
         "
       >
@@ -215,7 +218,7 @@ const Home = () => {
         >
 
           {/* OPERACION */}
-          <div className="px-6 py-4 text-left">
+          <div className="px-5 py-3 text-left">
 
             <label className="text-white/60 text-[10px] font-semibold uppercase tracking-wider block mb-1">
               Operación
@@ -235,7 +238,7 @@ const Home = () => {
 
 
           {/* TIPO */}
-          <div className="px-6 py-4 border-t md:border-t-0 md:border-l border-white/20 text-left">
+          <div className="px-5 py-3 border-t md:border-t-0 md:border-l border-white/20 text-left">
 
             <label className="text-white/60 text-[10px] font-semibold uppercase tracking-wider block mb-1">
               Tipo
@@ -257,7 +260,7 @@ const Home = () => {
 
 
           {/* ZONA */}
-          <div className="px-6 py-4 border-t md:border-t-0 md:border-l border-white/20 text-left">
+          <div className="px-5 py-3 border-t md:border-t-0 md:border-l border-white/20 text-left">
 
             <label className="text-white/60 text-[10px] font-semibold uppercase tracking-wider block mb-1">
               Ubicación
@@ -291,7 +294,7 @@ const Home = () => {
               to-gray-300
               text-gray-800
               font-semibold
-              py-4
+              py-3
               flex items-center
               justify-center
               gap-2
