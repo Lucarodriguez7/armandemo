@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import React, { useEffect, useState, ReactNode } from 'react'
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
@@ -23,6 +23,42 @@ import PropertiesManager from "./pages/admin/PropertiesManager"
 
 import 'swiper/css'
 import { supabase } from "./lib/supabaseClient"
+
+
+
+/* =========================
+   PROTECTED ROUTE ADMIN
+========================= */
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+
+    const checkUser = async () => {
+
+      const { data } = await supabase.auth.getUser()
+
+      setUser(data.user)
+      setLoading(false)
+
+    }
+
+    checkUser()
+
+  }, [])
+
+  if (loading) return null
+
+  if (!user) {
+    return <Navigate to="/admin/login" replace />
+  }
+
+  return <>{children}</>
+
+}
 
 
 
@@ -55,6 +91,7 @@ function Preloader() {
 }
 
 
+
 /* =========================
    TRACK VISITAS DEL SITIO
 ========================= */
@@ -71,8 +108,6 @@ function TrackVisit() {
 
       if (error) {
         console.error("Error guardando visita:", error)
-      } else {
-        console.log("Visita guardada")
       }
 
     }
@@ -82,6 +117,7 @@ function TrackVisit() {
   }, [])
 
   return null
+
 }
 
 
@@ -94,9 +130,9 @@ const ScrollToTop = () => {
 
   const { pathname } = useLocation()
 
-  useEffect(()=>{
-    window.scrollTo(0,0)
-  },[pathname])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return null
 
@@ -108,35 +144,35 @@ const ScrollToTop = () => {
    LAYOUT PUBLICO
 ========================= */
 
-function PublicLayout(){
+function PublicLayout() {
 
-  return(
+  return (
 
     <div className="flex flex-col min-h-screen">
 
-      <TrackVisit/>
+      <TrackVisit />
 
-      <Navbar/>
+      <Navbar />
 
       <main className="flex-grow">
 
         <Routes>
 
-          <Route path="/" element={<Home/>} />
-          <Route path="/propiedades" element={<Catalog/>} />
-          <Route path="/propiedades/:id" element={<PropertyDetail/>} />
-          <Route path="/tasaciones" element={<Tasaciones/>} />
-          <Route path="/proyectos" element={<Proyectos/>} />
-          <Route path="/nosotros" element={<Nosotros/>} />
-          <Route path="/contacto" element={<Contacto/>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/propiedades" element={<Catalog />} />
+          <Route path="/propiedades/:id" element={<PropertyDetail />} />
+          <Route path="/tasaciones" element={<Tasaciones />} />
+          <Route path="/proyectos" element={<Proyectos />} />
+          <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/contacto" element={<Contacto />} />
 
         </Routes>
 
       </main>
 
-      <Footer/>
+      <Footer />
 
-      <WhatsAppButton/>
+      <WhatsAppButton />
 
     </div>
 
@@ -150,69 +186,118 @@ function PublicLayout(){
    APP PRINCIPAL
 ========================= */
 
-export default function App(){
+export default function App() {
 
-  const [loading,setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
 
 
 
   /* PRELOADER TIMER */
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const timer = setTimeout(()=>{
+    const timer = setTimeout(() => {
       setLoading(false)
-    },3000)
+    }, 3000)
 
-    return ()=> clearTimeout(timer)
+    return () => clearTimeout(timer)
 
-  },[])
+  }, [])
 
 
 
   /* AOS SOLO CUANDO TERMINA EL PRELOADER */
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    if(!loading){
+    if (!loading) {
 
       AOS.init({
-        duration:1000,
-        once:true,
-        easing:'ease-out-cubic'
+        duration: 1000,
+        once: true,
+        easing: 'ease-out-cubic'
       })
 
     }
 
-  },[loading])
+  }, [loading])
 
 
 
-  return(
+  return (
 
     <>
 
-      {/* PRELOADER ENCIMA DE TODO */}
-      {loading && <Preloader/>}
+      {loading && <Preloader />}
 
       <Router>
 
-        <ScrollToTop/>
+        <ScrollToTop />
 
         <Routes>
 
           {/* WEB NORMAL */}
-          <Route path="/*" element={<PublicLayout/>} />
+          <Route path="/*" element={<PublicLayout />} />
 
-          {/* ADMIN (SIN NAVBAR NI FOOTER) */}
 
-          <Route path="/admin/login" element={<Login/>} />
-          <Route path="/admin/dashboard" element={<Dashboard/>} />
-          <Route path="/admin/new" element={<NewProperty/>} />
-          <Route path="/admin/leads" element={<Leads/>} />
-          <Route path="/admin/insights" element={<Insights/>} />
-          <Route path="/admin/edit/:id" element={<EditProperty />} />
-          <Route path="/admin/properties" element={<PropertiesManager />} />
+
+          {/* ADMIN */}
+
+          <Route path="/admin/login" element={<Login />} />
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/new"
+            element={
+              <ProtectedRoute>
+                <NewProperty />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/leads"
+            element={
+              <ProtectedRoute>
+                <Leads />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/insights"
+            element={
+              <ProtectedRoute>
+                <Insights />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/:id"
+            element={
+              <ProtectedRoute>
+                <EditProperty />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/properties"
+            element={
+              <ProtectedRoute>
+                <PropertiesManager />
+              </ProtectedRoute>
+            }
+          />
 
         </Routes>
 
