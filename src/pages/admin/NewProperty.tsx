@@ -2,7 +2,7 @@ import * as React from "react"
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "../../lib/supabaseClient"
-import { ArrowLeft, Trash2, Star } from "lucide-react"
+import { ArrowLeft, Trash2, Star, Upload } from "lucide-react"
 
 import mapboxgl from "mapbox-gl"
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
@@ -14,6 +14,8 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 export default function NewProperty(){
 
 const navigate = useNavigate()
+
+const fileInputRef = useRef<HTMLInputElement | null>(null)
 
 const [title,setTitle] = useState("")
 const [price,setPrice] = useState("")
@@ -67,8 +69,6 @@ if(geocoderContainer.current){
 geocoderContainer.current.appendChild(geocoder.onAdd(map))
 }
 
-/* -------- BUSCAR DIRECCION -------- */
-
 geocoder.on("result",(e)=>{
 
 const coords = e.result.geometry.coordinates
@@ -100,8 +100,6 @@ markerRef.current.on("dragend",updateFromMarker)
 
 })
 
-/* -------- CLICK EN MAPA -------- */
-
 map.on("click",async(e)=>{
 
 const lng = e.lngLat.lng
@@ -124,8 +122,6 @@ markerRef.current.setLngLat([lng,lat])
 
 }
 
-/* reverse geocoding */
-
 const res = await fetch(
 `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`
 )
@@ -133,14 +129,10 @@ const res = await fetch(
 const data = await res.json()
 
 if(data.features.length>0){
-
 setAddress(data.features[0].place_name)
-
 }
 
 })
-
-/* -------- FUNCION DRAG MARKER -------- */
 
 async function updateFromMarker(){
 
@@ -158,9 +150,7 @@ const res = await fetch(
 const data = await res.json()
 
 if(data.features.length>0){
-
 setAddress(data.features[0].place_name)
-
 }
 
 }
@@ -227,10 +217,8 @@ const {error}=await supabase
 .upload(fileName,file)
 
 if(error){
-
 alert("Error subiendo imagen: "+error.message)
 continue
-
 }
 
 fileNames.push(fileName)
@@ -243,18 +231,25 @@ setUploading(false)
 
 }
 
-/* ---------------- DROPZONE ---------------- */
+/* CLICK DROPZONE */
+
+const openFileExplorer = ()=>{
+fileInputRef.current?.click()
+}
+
+const handleFileChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
+if(!e.target.files) return
+uploadImages(e.target.files)
+}
+
+/* DRAG DROP */
 
 const handleDrop=(e:React.DragEvent<HTMLDivElement>)=>{
-
 e.preventDefault()
 
 if(e.dataTransfer.files && e.dataTransfer.files.length>0){
-
 uploadImages(e.dataTransfer.files)
-
 e.dataTransfer.clearData()
-
 }
 
 }
@@ -346,46 +341,43 @@ Nueva Propiedad
 
 <input placeholder="Metros cuadrados" className="w-full border p-3 rounded" value={area} onChange={(e)=>setArea(e.target.value)}/>
 
-{/* MAPA */}
-
-<div className="bg-gray-50 p-5 rounded-xl space-y-4">
-
-<h3 className="font-semibold text-sm text-gray-700">
-Ubicación de la propiedad
-</h3>
-
-<div ref={geocoderContainer}/>
-
-<div ref={mapContainer} className="w-full h-[320px] rounded-xl border"/>
-
-<input
-placeholder="Dirección"
-className="w-full border p-3 rounded"
-value={address}
-onChange={(e)=>setAddress(e.target.value)}
-/>
-
-<div className="grid grid-cols-2 gap-3">
-
-<input placeholder="Latitud" className="border p-3 rounded bg-gray-100" value={latitude} readOnly/>
-
-<input placeholder="Longitud" className="border p-3 rounded bg-gray-100" value={longitude} readOnly/>
-
-</div>
-
-</div>
-
-{/* DROPZONE */}
+{/* DROPZONE MEJORADA */}
 
 <div
-className="border-2 border-dashed border-gray-400 rounded p-6 text-center cursor-pointer"
+onClick={openFileExplorer}
 onDrop={handleDrop}
 onDragOver={(e)=>e.preventDefault()}
+className="border-2 border-dashed border-gray-400 rounded-xl p-10 text-center cursor-pointer hover:border-black hover:bg-gray-50 transition"
 >
 
-<p>Arrastrá imágenes aquí</p>
+<input
+type="file"
+multiple
+accept="image/*"
+ref={fileInputRef}
+className="hidden"
+onChange={handleFileChange}
+/>
 
-{uploading && <p className="text-sm mt-2">Subiendo...</p>}
+<div className="flex flex-col items-center gap-3">
+
+<Upload size={28}/>
+
+<p className="font-medium">
+Arrastrá imágenes aquí
+</p>
+
+<p className="text-sm text-gray-500">
+o hacé click para seleccionarlas
+</p>
+
+{uploading && (
+<p className="text-sm text-gray-500">
+Subiendo imágenes...
+</p>
+)}
+
+</div>
 
 </div>
 
