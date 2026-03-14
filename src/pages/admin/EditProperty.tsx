@@ -2,7 +2,7 @@ import * as React from "react"
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { supabase } from "../../lib/supabaseClient"
-import { ArrowLeft, Trash2, Star } from "lucide-react"
+import { ArrowLeft, Trash2, Star, Upload } from "lucide-react"
 
 import mapboxgl from "mapbox-gl"
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
@@ -38,6 +38,8 @@ const [longitude,setLongitude] = useState<number | null>(null)
 const mapContainer = useRef<HTMLDivElement | null>(null)
 const mapRef = useRef<mapboxgl.Map | null>(null)
 const markerRef = useRef<mapboxgl.Marker | null>(null)
+
+const fileInputRef = useRef<HTMLInputElement | null>(null)
 
 
 // ===============================
@@ -117,7 +119,7 @@ fetchProperty()
 
 
 // ===============================
-// MAPA + BUSCADOR
+// MAPA
 // ===============================
 
 useEffect(()=>{
@@ -139,9 +141,6 @@ markerRef.current = new mapboxgl.Marker({draggable:true})
 .setLngLat([longitude,latitude])
 .addTo(mapRef.current)
 
-
-// BUSCADOR DE DIRECCIONES
-
 const geocoder = new MapboxGeocoder({
 
 accessToken: mapboxgl.accessToken,
@@ -154,9 +153,6 @@ language:"es"
 
 mapRef.current.addControl(geocoder)
 
-
-// CUANDO SE SELECCIONA DIRECCIÓN
-
 geocoder.on("result",(e)=>{
 
 const coords = e.result.geometry.coordinates
@@ -164,8 +160,7 @@ const coords = e.result.geometry.coordinates
 setLongitude(coords[0])
 setLatitude(coords[1])
 
-markerRef.current!
-.setLngLat(coords)
+markerRef.current!.setLngLat(coords)
 
 mapRef.current!.flyTo({
 
@@ -176,9 +171,6 @@ zoom:16
 
 })
 
-
-// MOVER PIN
-
 markerRef.current.on("dragend",()=>{
 
 const lngLat = markerRef.current!.getLngLat()
@@ -188,16 +180,12 @@ setLongitude(lngLat.lng)
 
 })
 
-
-// CLICK EN MAPA
-
 mapRef.current.on("click",(e)=>{
 
 setLatitude(e.lngLat.lat)
 setLongitude(e.lngLat.lng)
 
-markerRef.current!
-.setLngLat([e.lngLat.lng,e.lngLat.lat])
+markerRef.current!.setLngLat([e.lngLat.lng,e.lngLat.lat])
 
 })
 
@@ -282,6 +270,12 @@ if(e.dataTransfer.files){
 uploadImages(e.dataTransfer.files)
 }
 
+}
+
+const handleFileSelect = (e:React.ChangeEvent<HTMLInputElement>)=>{
+if(e.target.files){
+uploadImages(e.target.files)
+}
 }
 
 
@@ -400,6 +394,34 @@ className="w-full h-80 rounded border"
 </div>
 
 
+{/* SUBIR IMAGENES */}
+
+<div className="flex justify-between items-center">
+
+<h3 className="font-semibold">
+Imágenes
+</h3>
+
+<button
+type="button"
+onClick={()=>fileInputRef.current?.click()}
+className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg"
+>
+<Upload size={16}/>
+Subir imágenes
+</button>
+
+<input
+type="file"
+multiple
+hidden
+ref={fileInputRef}
+onChange={handleFileSelect}
+/>
+
+</div>
+
+
 {/* DROPZONE */}
 
 <div
@@ -445,7 +467,7 @@ Principal
 </div>
 )}
 
-<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3">
+<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 rounded">
 
 <button
 type="button"
