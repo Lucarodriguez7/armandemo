@@ -12,6 +12,7 @@ import { motion } from "framer-motion"
 
 import PropertyCard from "../components/PropertyCard"
 import { supabase } from "../lib/supabaseClient"
+import { Navigation } from "swiper/modules";
 
 import { Swiper, SwiperSlide } from "swiper/react"
 import "swiper/css"
@@ -149,7 +150,7 @@ const Home = () => {
   return (
     <div className="overflow-hidden">
 {/* Hero Section */}
-<section className="relative h-[78vh] pt-20 flex items-center justify-center overflow-hidden">
+<section className="relative min-h-[105vh] md:min-h-[90vh] pt-32 md:pt-20 pb-20 md:pb-12 flex items-center justify-center overflow-hidden">
 
   {/* Background */}
   <div className="absolute inset-0">
@@ -163,7 +164,7 @@ const Home = () => {
     >
       <source src="/videos/hero.mp4" type="video/mp4" />
     </video>
-
+ <div className="w-full h-full object-cover scale-110"></div>
     <div className="absolute inset-0 bg-black/40"></div>
 
     <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60"></div>
@@ -172,7 +173,7 @@ const Home = () => {
 
 
   {/* CONTENT */}
-  <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
+<div className="relative z-10 max-w-6xl mx-auto px-6 text-center pt-6 md:pt-0">
 
     <h1
       data-aos="fade-up"
@@ -196,7 +197,7 @@ const Home = () => {
     <div
       data-aos="fade-up"
       data-aos-delay="200"
-      className="mt-8 md:mt-10"
+      className="mt-12 md:mt-10"
     >
 
       <div
@@ -206,7 +207,7 @@ const Home = () => {
         border border-white/20
         shadow-[0_20px_60px_rgba(0,0,0,0.35)]
         rounded-2xl md:rounded-full
-        p-2
+        p-3 md:p-2
         max-w-4xl
         mx-auto
         "
@@ -434,47 +435,77 @@ className="absolute inset-0 w-full h-full object-cover"
 
 
 
-      {/* Featured Properties */}
+     {/* Featured Properties */}
 
-      <section className="py-24 bg-white">
+<section className="py-24 bg-white overflow-hidden">
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6" data-aos="fade-up">
+    <div
+      className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6"
+      data-aos="fade-up"
+    >
 
-            <div>
+      <div>
 
-              <span className="text-brand-primary/40 font-bold uppercase tracking-widest text-xs mb-2 block">
-                Oportunidades
-              </span>
+        <span className="text-brand-primary/40 font-bold uppercase tracking-widest text-xs mb-2 block">
+          Oportunidades
+        </span>
 
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-brand-primary">
-                Propiedades Destacadas
-              </h2>
+        <h2 className="text-3xl md:text-4xl font-display font-bold text-brand-primary">
+          Propiedades Destacadas
+        </h2>
 
-            </div>
+      </div>
 
-            <Link to="/propiedades" className="text-brand-primary font-semibold flex items-center gap-2 hover:underline">
-              Ver todo el catálogo <ArrowRight size={18} />
-            </Link>
+      <Link
+        to="/propiedades"
+        className="text-brand-primary font-semibold flex items-center gap-2 hover:underline"
+      >
+        Ver todo el catálogo <ArrowRight size={18} />
+      </Link>
+
+    </div>
+
+    {/* SWIPER */}
+
+<Swiper
+    spaceBetween={24}
+  slidesPerView={1.15}
+  grabCursor={true}
+  breakpoints={{
+    640: {
+      slidesPerView: 1.2
+    },
+    768: {
+      slidesPerView: 2
+    },
+    1024: {
+      slidesPerView: 3
+    }
+  }}
+      className="!overflow-visible"
+    >
+
+      {featuredProperties.map((property) => (
+
+        <SwiperSlide key={property.id}>
+
+          <div data-aos="fade-up">
+
+            <PropertyCard property={property} />
 
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        </SwiperSlide>
 
-            {featuredProperties.map((property, idx) => (
+      ))}
 
-              <div key={property.id} data-aos="fade-up" data-aos-delay={idx * 100}>
-                <PropertyCard property={property} />
-              </div>
+    </Swiper>
 
-            ))}
+  </div>
 
-          </div>
-
-        </div>
-
-      </section>
+</section>
 
       {/* Process Section */}
 
