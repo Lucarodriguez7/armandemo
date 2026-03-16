@@ -670,9 +670,9 @@ const Proyectos = () => {
         <div className="section-inner" style={{ position: "relative", zIndex: 1 }}>
           <div className="stats-grid">
             {[
-              { n: 120,  suffix: "",    label: "Lotes disponibles" },
+              { n: 42,  suffix: "",    label: "Lotes disponibles" },
               { n: 8,    suffix: "%",   label: "ROI anual estimado" },
-              { n: 5,    suffix: "min", label: "Del centro" },
+              { n: 10,    suffix: "min", label: "Del centro" },
               { n: 2026, suffix: "",    label: "Año de lanzamiento" }
             ].map((s, i) => (
               <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
