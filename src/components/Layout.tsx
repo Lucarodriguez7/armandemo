@@ -11,66 +11,47 @@ function cn(...inputs: ClassValue[]) {
 /* ---------------- NAVBAR ---------------- */
 
 export const Navbar = () => {
-
-  const [isOpen,setIsOpen] = useState(false);
-  const [scrolled,setScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const location = useLocation();
   const isHome = location.pathname === "/";
 
-  /* Detect scroll */
-
-  useEffect(()=>{
-
+  useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    window.addEventListener("scroll",handleScroll);
-
-    return () => window.removeEventListener("scroll",handleScroll);
-
-  },[]);
-
-  /* Cerrar menu al cambiar pagina */
-
-  useEffect(()=>{
+  useEffect(() => {
     setIsOpen(false);
-  },[location.pathname]);
+  }, [location.pathname]);
 
-  /* Bloquear scroll cuando el menu abre */
-
-  useEffect(()=>{
-
-    if(isOpen){
+  useEffect(() => {
+    if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
     }
+  }, [isOpen]);
 
-  },[isOpen]);
-
-  /* Cerrar con ESC */
-
-  useEffect(()=>{
-
-    const esc = (e:KeyboardEvent)=>{
-      if(e.key === "Escape") setIsOpen(false);
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
     };
-
-    window.addEventListener("keydown",esc);
-
-    return ()=>window.removeEventListener("keydown",esc);
-
-  },[]);
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, []);
 
   const navLinks = [
-    { name:"Inicio",path:"/" },
-    { name:"Propiedades",path:"/propiedades" },
-    { name:"Proyectos",path:"/proyectos" },
-    { name:"Tasaciones",path:"/tasaciones" },
-    { name:"Nosotros",path:"/nosotros" },
-    { name:"Contacto",path:"/contacto" }
+    { name: "Inicio", path: "/" },
+    { name: "Propiedades", path: "/propiedades" },
+    { name: "Proyectos", path: "/proyectos" },
+    { name: "Tasaciones", path: "/tasaciones" },
+    { name: "Nosotros", path: "/nosotros" },
+    { name: "Contacto", path: "/contacto" }
   ];
 
   const navbarBackground =
@@ -78,308 +59,207 @@ export const Navbar = () => {
       ? "bg-transparent"
       : "bg-[#1f1f1f]/95 backdrop-blur-md shadow-lg";
 
-  return(
+  return (
+    <>
+      <nav
+        className={cn(
+          "fixed top-0 left-0 w-full z-40 h-20 flex items-center transition-all duration-300",
+          navbarBackground
+        )}
+      >
+        {/* Usamos max-width 100% y overflow hidden para que la nav no empuje el layout */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
+          <div className="flex justify-between items-center">
+            <Link to="/">
+              <img
+                src="https://imgur.com/1tXzOav.jpg"
+                alt="Arman Propiedades"
+                className="h-10 md:h-12 object-contain"
+              />
+            </Link>
 
-<>
-<nav
-className={cn(
-"fixed top-0 left-0 w-full z-40 h-20 flex items-center transition-all duration-300",
-navbarBackground
-)}
->
+            <div className="hidden md:flex items-center gap-10">
+              {navLinks.map((link) => {
+                const active = location.pathname === link.path;
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    className={cn(
+                      "text-sm text-white relative group",
+                      active && "font-semibold"
+                    )}
+                  >
+                    {link.name}
+                    <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                );
+              })}
+            </div>
 
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <button onClick={() => setIsOpen(true)} className="md:hidden text-white p-2">
+              <Menu size={28} />
+            </button>
+          </div>
+        </div>
+      </nav>
 
-<div className="flex justify-between items-center">
+      <div
+        onClick={() => setIsOpen(false)}
+        className={cn(
+          "fixed inset-0 bg-black/60 z-50 transition-opacity duration-300",
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        )}
+      />
 
-{/* LOGO */}
-
-<Link to="/">
-
-<img
-src="https://imgur.com/1tXzOav.jpg"
-alt="Arman Propiedades"
-className="h-10 md:h-12 object-contain"
-/>
-
-</Link>
-
-{/* DESKTOP MENU */}
-
-<div className="hidden md:flex items-center gap-10">
-
-{navLinks.map((link)=>{
-
-const active = location.pathname === link.path;
-
-return(
-
-<Link
-key={link.name}
-to={link.path}
-className={cn(
-"text-sm text-white relative group",
-active && "font-semibold"
-)}
->
-
-{link.name}
-
-<span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
-
-</Link>
-
-);
-
-})}
-
-</div>
-
-{/* MOBILE BUTTON */}
-
-<button
-onClick={()=>setIsOpen(true)}
-className="md:hidden text-white"
->
-
-<Menu size={28}/>
-
-</button>
-
-</div>
-
-</div>
-
-</nav>
-
-{/* OVERLAY */}
-
-<div
-onClick={()=>setIsOpen(false)}
-className={cn(
-"fixed inset-0 bg-black/60 z-50 transition-opacity duration-300",
-isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-)}
-/>
-
-{/* SIDE MENU */}
-
-<div
-className={cn(
-"fixed top-0 right-0 h-screen w-[280px] bg-[#1f1f1f] z-[60] shadow-2xl transform transition-transform duration-300",
-isOpen ? "translate-x-0" : "translate-x-full"
-)}
->
-
-<div className="flex justify-between items-center p-6 border-b border-white/10">
-
-<img
-src="https://imgur.com/1tXzOav.jpg"
-className="h-8"
-/>
-
-<button onClick={()=>setIsOpen(false)}>
-
-<X className="text-white"/>
-
-</button>
-
-</div>
-
-<div className="flex flex-col gap-6 p-8">
-
-{navLinks.map((link)=>(
-
-<Link
-key={link.name}
-to={link.path}
-onClick={()=>setIsOpen(false)}
-className="text-white text-lg font-medium hover:opacity-70 transition"
->
-
-{link.name}
-
-</Link>
-
-))}
-
-</div>
-
-</div>
-
-</>
-
-);
-
+      <div
+        className={cn(
+          "fixed top-0 right-0 h-screen w-[280px] bg-[#1f1f1f] z-[60] shadow-2xl transform transition-transform duration-300",
+          isOpen ? "translate-x-0" : "translate-x-full"
+        )}
+      >
+        <div className="flex justify-between items-center p-6 border-b border-white/10">
+          <img src="https://imgur.com/1tXzOav.jpg" className="h-8" alt="Logo" />
+          <button onClick={() => setIsOpen(false)}>
+            <X className="text-white" />
+          </button>
+        </div>
+        <div className="flex flex-col gap-6 p-8">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              to={link.path}
+              onClick={() => setIsOpen(false)}
+              className="text-white text-lg font-medium hover:opacity-70 transition"
+            >
+              {link.name}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </>
+  );
 };
 
 /* ---------------- FOOTER ---------------- */
 
 export const Footer = () => {
+  return (
+    <footer className="bg-[#1f1f1f] text-white pt-16 pb-8 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          <div className="space-y-6">
+            <img src="https://imgur.com/1tXzOav.jpg" className="h-12" alt="Logo" />
+            <p className="text-white/60 text-sm">
+              Gestión inmobiliaria responsable y transparente en Córdoba. Tu confianza es nuestro mayor compromiso.
+            </p>
+            <div className="flex gap-4">
+              <a href="https://instagram.com/arman.propiedades" target="_blank" rel="noreferrer">
+                <Instagram size={20} className="hover:text-white/80 transition" />
+              </a>
+              <a href="mailto:armangrupoinmobiliario@gmail.com">
+                <Mail size={20} className="hover:text-white/80 transition" />
+              </a>
+            </div>
+          </div>
 
-return(
+          <div>
+            <h3 className="font-semibold mb-6">Navegación</h3>
+            <ul className="space-y-3 text-white/60 text-sm">
+              <li><Link to="/" className="hover:text-white transition">Inicio</Link></li>
+              <li><Link to="/propiedades" className="hover:text-white transition">Propiedades</Link></li>
+              <li><Link to="/proyectos" className="hover:text-white transition">Proyectos</Link></li>
+              <li><Link to="/tasaciones" className="hover:text-white transition">Tasaciones</Link></li>
+              <li><Link to="/nosotros" className="hover:text-white transition">Nosotros</Link></li>
+            </ul>
+          </div>
 
-<footer className="bg-[#1f1f1f] text-white pt-16 pb-8">
+          <div>
+            <h3 className="font-semibold mb-6">Servicios</h3>
+            <ul className="space-y-3 text-white/60 text-sm">
+              <li>Venta de Propiedades</li>
+              <li>Alquileres</li>
+              <li>Tasaciones Profesionales</li>
+              <li>Desarrollos Inmobiliarios</li>
+            </ul>
+          </div>
 
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-<div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-
-{/* BRAND */}
-
-<div className="space-y-6">
-
-<img
-src="https://imgur.com/1tXzOav.jpg"
-className="h-12"
-/>
-
-<p className="text-white/60 text-sm">
-
-Gestión inmobiliaria responsable y transparente en Córdoba.
-Tu confianza es nuestro mayor compromiso.
-
-</p>
-
-<div className="flex gap-4">
-
-<a href="https://instagram.com/arman.propiedades" target="_blank">
-
-<Instagram size={20}/>
-
-</a>
-
-<a href="mailto:armangrupoinmobiliario@gmail.com">
-
-<Mail size={20}/>
-
-</a>
-
-</div>
-
-</div>
-
-{/* NAV */}
-
-<div>
-
-<h3 className="font-semibold mb-6">
-Navegación
-</h3>
-
-<ul className="space-y-3 text-white/60 text-sm">
-
-<li><Link to="/">Inicio</Link></li>
-<li><Link to="/propiedades">Propiedades</Link></li>
-<li><Link to="/proyectos">Proyectos</Link></li>
-<li><Link to="/tasaciones">Tasaciones</Link></li>
-<li><Link to="/nosotros">Nosotros</Link></li>
-
-</ul>
-
-</div>
-
-{/* SERVICES */}
-
-<div>
-
-<h3 className="font-semibold mb-6">
-Servicios
-</h3>
-
-<ul className="space-y-3 text-white/60 text-sm">
-
-<li>Venta de Propiedades</li>
-<li>Alquileres</li>
-<li>Tasaciones Profesionales</li>
-<li>Desarrollos Inmobiliarios</li>
-
-</ul>
-
-</div>
-
-{/* CONTACT */}
-
-<div>
-
-<h3 className="font-semibold mb-6">
-Contacto
-</h3>
-
-<ul className="space-y-4 text-white/60 text-sm">
-
-<li className="flex gap-3">
-<MapPin size={18}/>
-9 de Julio 37, Córdoba
-</li>
-
-<li className="flex gap-3">
-<Phone size={18}/>
-+54 9 351 505 2474
-</li>
-
-<li className="flex gap-3">
-<Mail size={18}/>
-armangrupoinmobiliario@gmail.com
-</li>
-
-</ul>
-
-</div>
-
-</div>
-
-<div className="border-t border-white/10 pt-8 text-center text-xs text-white/40">
-
-© {new Date().getFullYear()} Arman Propiedades
-
-</div>
-
-</div>
-
-</footer>
-
-);
-
+          <div>
+            <h3 className="font-semibold mb-6">Contacto</h3>
+            <ul className="space-y-4 text-white/60 text-sm">
+              <li className="flex gap-3"><MapPin size={18} /> 9 de Julio 37, Córdoba</li>
+              <li className="flex gap-3"><Phone size={18} /> +54 9 351 505 2474</li>
+              <li className="flex gap-3"><Mail size={18} /> armangrupoinmobiliario@gmail.com</li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-white/10 pt-8 text-center text-xs text-white/40">
+          © {new Date().getFullYear()} Arman Propiedades
+        </div>
+      </div>
+    </footer>
+  );
 };
 
 /* ---------------- WHATSAPP ---------------- */
 
 export const WhatsAppButton = () => (
-
-<a
-href="https://wa.me/5493515052474"
-target="_blank"
-rel="noreferrer"
-className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 transition"
->
-
-<Phone size={24}/>
-
-</a>
-
+  <a
+    href="https://wa.me/5493515052474"
+    target="_blank"
+    rel="noreferrer"
+    className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 transition active:scale-95"
+  >
+    <Phone size={24} />
+  </a>
 );
 
-/* ---------------- PAGE LAYOUT ---------------- */
+/* ---------------- PAGE LAYOUT (FIXED) ---------------- */
 
-export const PageLayout = ({children}:{children:React.ReactNode}) => {
+export const PageLayout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="layout-wrapper" style={{ 
+      width: '100%', 
+      maxWidth: '100vw', 
+      overflowX: 'hidden', 
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh'
+    }}>
+      {/* Estilos globales de emergencia para asegurar el responsive */}
+      <style>{`
+        html, body {
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Previene que elementos internos empujen el viewport */
+        * {
+          box-sizing: border-box;
+        }
 
-return(
+        main {
+          flex: 1;
+          width: 100%;
+          max-width: 100vw;
+          overflow-x: hidden;
+        }
+      `}</style>
 
-<div>
+      <Navbar />
 
-<Navbar/>
+      <main className="pt-20">
+        {children}
+      </main>
 
-<main className="pt-20">
-{children}
-</main>
+      <Footer />
 
-<Footer/>
-
-<WhatsAppButton/>
-
-</div>
-
-);
-
+      <WhatsAppButton />
+    </div>
+  );
 };

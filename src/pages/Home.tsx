@@ -61,8 +61,8 @@ const Home = () => {
 
   const locations = [
     {
-      name: "MANANTIALES",
-      filter: "manantiales",
+      name: "CENTRO",
+      filter: "centro",
       image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"
     },
     {
@@ -150,13 +150,14 @@ const Home = () => {
   return (
     <div className="overflow-hidden">
 {/* Hero Section */}
-<section className="relative min-h-[105vh] md:min-h-[90vh] pt-32 md:pt-20 pb-20 md:pb-12 flex items-center justify-center overflow-hidden">
+<section className="relative h-screen pt-32 md:pt-20 flex items-center justify-center overflow-hidden">
 
   {/* Background */}
   <div className="absolute inset-0">
 
+    {/* VIDEO MOBILE */}
     <video
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover md:hidden"
       autoPlay
       muted
       loop
@@ -164,7 +165,18 @@ const Home = () => {
     >
       <source src="/videos/hero.mp4" type="video/mp4" />
     </video>
- <div className="w-full h-full object-cover scale-110"></div>
+
+    {/* VIDEO DESKTOP */}
+    <video
+      className="w-full h-full object-cover hidden md:block"
+      autoPlay
+      muted
+      loop
+      playsInline
+    >
+      <source src="/videos/videohero.mp4" type="video/mp4" />
+    </video>
+
     <div className="absolute inset-0 bg-black/40"></div>
 
     <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60"></div>
@@ -173,7 +185,7 @@ const Home = () => {
 
 
   {/* CONTENT */}
-<div className="relative z-10 max-w-6xl mx-auto px-6 text-center pt-6 md:pt-0">
+  <div className="relative z-10 max-w-6xl mx-auto px-6 text-center pt-6 md:pt-0">
 
     <h1
       data-aos="fade-up"
