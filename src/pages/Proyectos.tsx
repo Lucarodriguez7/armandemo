@@ -10,7 +10,11 @@ import {
   Phone,
   Star,
   Sun,
-  Waves
+  Waves,
+  DollarSign,
+  CalendarDays,
+  BadgeCheck,
+  Percent
 } from "lucide-react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import CountUp from "react-countup"
@@ -499,6 +503,159 @@ const Proyectos = () => {
       </section>
 
       {/* ══════════════════════════════════
+          FINANCIACIÓN PROPIA
+      ══════════════════════════════════ */}
+      <section className="section-pad" style={{ padding: "100px 0", background: "var(--dark)", position: "relative", overflow: "hidden" }}>
+        {/* Decorative glow */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 60% 50%, rgba(201,169,110,0.07) 0%, transparent 65%)", pointerEvents: "none" }} />
+
+        <div className="section-inner" style={{ position: "relative", zIndex: 1 }}>
+          {/* Header */}
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={{ visible: { transition: { staggerChildren: 0.09 } } }}
+            style={{ marginBottom: 72 }}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 0 }} className="financ-header-grid">
+              <style>{`
+                @media (min-width: 769px) {
+                  .financ-header-grid { grid-template-columns: 1fr 1fr !important; gap: 64px !important; align-items: end !important; }
+                }
+              `}</style>
+
+              <div>
+                <motion.p variants={fadeUp} custom={0} style={{ color: "var(--gold)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 16 }}>
+                  Financiación propia
+                </motion.p>
+                <motion.h2 variants={fadeUp} custom={1} className="font-display" style={{ fontSize: "clamp(28px,4vw,52px)", fontWeight: 300, color: "#fff", lineHeight: 1.1, marginBottom: 20 }}>
+                  Invertí sin necesitar<br /><em style={{ color: "var(--gold-light)" }}>un banco</em>
+                </motion.h2>
+                <motion.div variants={fadeUp} custom={2} style={{ width: 60, height: 1, background: "linear-gradient(to right, transparent, var(--gold), transparent)", marginBottom: 24 }} />
+                <motion.p variants={fadeUp} custom={3} style={{ color: "rgba(255,255,255,0.5)", fontSize: "clamp(14px,1.8vw,16px)", lineHeight: 1.8, maxWidth: 440 }}>
+                  Contamos con planes de financiación directa, sin intermediarios bancarios. Cuotas accesibles en pesos o dólares, adaptadas a tu capacidad de pago. Comprás tu lote hoy y empezás a construir tu patrimonio de inmediato.
+                </motion.p>
+              </div>
+
+              {/* Big number accent */}
+              <motion.div
+                variants={fadeUp} custom={2}
+                style={{ display: "flex", alignItems: "center", gap: 24, marginTop: 32 }}
+              >
+                <div style={{ borderLeft: "1px solid rgba(201,169,110,0.25)", paddingLeft: 32 }}>
+                  <div className="font-display" style={{ fontSize: "clamp(52px,7vw,88px)", fontWeight: 300, color: "var(--gold)", lineHeight: 0.9 }}>
+                    0%
+                  </div>
+                  <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", marginTop: 10 }}>
+                    Interés para las primeras cuotas
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Feature cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            {[
+              {
+                icon: <DollarSign size={20} />,
+                title: "Sin banco",
+                desc: "Financiación 100% propia. Sin calificación crediticia ni papelerío bancario."
+              },
+              {
+                icon: <CalendarDays size={20} />,
+                title: "Plazos flexibles",
+                desc: "Hasta 60 cuotas. Adaptamos el plan a tu situación financiera real."
+              },
+              {
+                icon: <Percent size={20} />,
+                title: "Cuotas accesibles",
+                desc: "Pagás en pesos o dólares. Siempre con condiciones claras y sin sorpresas."
+              },
+              {
+                icon: <BadgeCheck size={20} />,
+                title: "Escritura garantizada",
+                desc: "Desde la firma del boleto, el lote es tuyo. Escritura al completar el pago."
+              }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(201,169,110,0.15)",
+                  borderRadius: 16,
+                  padding: "28px 24px",
+                  transition: "border-color 0.3s, background 0.3s"
+                }}
+                whileHover={{ borderColor: "rgba(201,169,110,0.4)", background: "rgba(201,169,110,0.06)" } as any}
+              >
+                <div style={{
+                  width: 42, height: 42, borderRadius: 10,
+                  background: "rgba(201,169,110,0.12)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "var(--gold)", marginBottom: 16
+                }}>
+                  {item.icon}
+                </div>
+                <h3 style={{ color: "#fff", fontSize: 15, fontWeight: 500, marginBottom: 8, letterSpacing: "0.02em" }}>
+                  {item.title}
+                </h3>
+                <p style={{ color: "rgba(255,255,255,0.42)", fontSize: 13, lineHeight: 1.7 }}>
+                  {item.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.3 }}
+            style={{
+              marginTop: 48,
+              padding: "28px 32px",
+              borderRadius: 14,
+              border: "1px solid rgba(201,169,110,0.2)",
+              background: "rgba(201,169,110,0.05)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 24,
+              flexWrap: "wrap"
+            }}
+          >
+            <div>
+              <p style={{ color: "#fff", fontSize: "clamp(14px,2vw,16px)", fontWeight: 500, marginBottom: 4 }}>
+                ¿Querés conocer tu plan de cuotas?
+              </p>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+                Un asesor te arma una propuesta personalizada sin compromiso.
+              </p>
+            </div>
+            <a
+              href={whatsappLink} target="_blank"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                background: "var(--gold)", color: "#fff",
+                padding: "14px 28px", borderRadius: 50,
+                fontSize: 13, fontWeight: 500, letterSpacing: "0.06em",
+                textDecoration: "none", transition: "all 0.25s",
+                boxShadow: "0 6px 24px rgba(201,169,110,0.35)",
+                whiteSpace: "nowrap", flexShrink: 0
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(201,169,110,0.5)" }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 6px 24px rgba(201,169,110,0.35)" }}
+            >
+              Consultar financiación <ArrowRight size={14} />
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════
           STATS BAND
       ══════════════════════════════════ */}
       <section
@@ -891,8 +1048,8 @@ const Proyectos = () => {
       {/* ══════════════════════════════════
           CTA FINAL
       ══════════════════════════════════ */}
-      <section className="section-pad" style={{ padding: "100px 0", background: "var(--cream)" }}>
-        <div className="section-inner">
+      <section style={{ background: "#1f1f1f", padding: "100px 0 0 0" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }} transition={{ duration: 0.8 }}
@@ -926,7 +1083,10 @@ const Proyectos = () => {
             </div>
           </motion.div>
         </div>
+        {/* Spacer oscuro que une con el footer */}
+        <div style={{ height: 64, background: "#1f1f1f" }} />
       </section>
+
     </div>
   )
 }
