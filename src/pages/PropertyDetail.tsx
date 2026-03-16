@@ -7,7 +7,6 @@ MapPin,
 BedDouble,
 Bath,
 Maximize,
-Car,
 ArrowLeft,
 ChevronLeft,
 ChevronRight,
@@ -108,6 +107,10 @@ new Intl.NumberFormat("es-AR").format(property.price||0)
 const latitude = property.latitude
 const longitude = property.longitude
 
+const locationText = [property.zone, property.city]
+.filter(Boolean)
+.join(", ")
+
 async function submitLead(e:any){
 
 e.preventDefault()
@@ -134,9 +137,9 @@ alert("Consulta enviada")
 
 return(
 
-<div className="bg-gray-50 min-h-screen pt-24 pb-20">
+<div className="bg-gray-50 min-h-screen pt-24 pb-20 overflow-x-hidden">
 
-<div className="max-w-7xl mx-auto px-4">
+<div className="max-w-7xl mx-auto px-4 w-full">
 
 <Link
 to="/propiedades"
@@ -146,18 +149,17 @@ className="flex items-center text-sm text-gray-500 mb-6"
 Volver
 </Link>
 
-
 {/* GRID */}
 
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-{/* CONTENIDO PRINCIPAL */}
+{/* CONTENIDO */}
 
 <div className="lg:col-span-2 space-y-8">
 
 {/* GALERIA */}
 
-<div className="bg-white rounded-xl shadow-sm overflow-hidden">
+<div className="bg-white rounded-xl shadow-sm overflow-hidden w-full">
 
 <div
 className="relative aspect-[4/3] md:aspect-[16/9] cursor-pointer"
@@ -196,29 +198,27 @@ className="w-full h-full object-cover"
 
 </div>
 
-
 {/* CARACTERISTICAS */}
 
-<div className="bg-white p-8 rounded-xl shadow-sm">
+<div className="bg-white p-6 md:p-8 rounded-xl shadow-sm">
 
 <h2 className="text-2xl font-bold mb-6">
 Características
 </h2>
 
-<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+<div className="grid grid-cols-3 gap-3">
 
-<Feature icon={<BedDouble size={20}/>} label="Habitaciones" value={property.bedrooms}/>
-<Feature icon={<Bath size={20}/>} label="Baños" value={property.bathrooms}/>
-<Feature icon={<Maximize size={20}/>} label="m²" value={property.area}/>
-
-</div>
+<Feature icon={<BedDouble size={18}/>} label="Habitaciones" value={property.bedrooms}/>
+<Feature icon={<Bath size={18}/>} label="Baños" value={property.bathrooms}/>
+<Feature icon={<Maximize size={18}/>} label="m²" value={property.area}/>
 
 </div>
 
+</div>
 
 {/* DESCRIPCION */}
 
-<div className="bg-white p-8 rounded-xl shadow-sm">
+<div className="bg-white p-6 md:p-8 rounded-xl shadow-sm">
 
 <h3 className="text-xl font-bold mb-4">
 Descripción
@@ -230,19 +230,18 @@ Descripción
 
 </div>
 
-
 {/* MAPA */}
 
 {latitude && longitude &&(
 
-<div className="bg-white p-6 rounded-xl shadow-sm">
+<div className="bg-white p-6 rounded-xl shadow-sm w-full">
 
 <h3 className="text-xl font-bold mb-4">
 Ubicación
 </h3>
 
 <iframe
-width="100%"
+className="w-full rounded-lg"
 height="320"
 loading="lazy"
 src={`https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`}
@@ -265,10 +264,9 @@ Abrir en Google Maps
 
 </div>
 
+{/* SIDEBAR */}
 
-{/* SIDEBAR CONTACTO */}
-
-<div className="lg:sticky lg:top-28 h-fit">
+<div className="lg:sticky lg:top-28 h-fit w-full">
 
 <div className="bg-white p-6 rounded-xl shadow-sm">
 
@@ -280,12 +278,12 @@ Abrir en Google Maps
 
 <MapPin size={16} className="mr-2"/>
 
-{property.zone}, {property.city}
+{locationText}
 
 </div>
 
 <div className="text-3xl font-bold mb-6">
-  {(property.currency || (property.operation?.toLowerCase() === "alquiler" ? "ARS" : "USD"))} {formattedPrice}
+{(property.currency || (property.operation?.toLowerCase() === "alquiler" ? "ARS" : "USD"))} {formattedPrice}
 </div>
 
 <a
@@ -348,7 +346,6 @@ Enviar consulta
 
 </div>
 
-
 {/* PROPIEDADES SIMILARES */}
 
 {similar.length>0 &&(
@@ -371,12 +368,11 @@ Propiedades similares
 
 )}
 
-
 {/* MODAL GALERIA */}
 
 {galleryOpen &&(
 
-<div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
+<div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center overflow-hidden">
 
 <button
 onClick={()=>setGalleryOpen(false)}
@@ -389,7 +385,7 @@ className="absolute top-6 right-6 text-white"
 
 <button
 onClick={prevImage}
-className="absolute left-6 text-white"
+className="absolute left-4 md:left-6 text-white"
 >
 
 <ChevronLeft size={40}/>
@@ -403,7 +399,7 @@ className="max-w-[90%] max-h-[85%] object-contain"
 
 <button
 onClick={nextImage}
-className="absolute right-6 text-white"
+className="absolute right-4 md:right-6 text-white"
 >
 
 <ChevronRight size={40}/>
@@ -415,9 +411,6 @@ className="absolute right-6 text-white"
 )}
 
 </div>
-
-
-{/* WHATSAPP FLOATING MOBILE */}
 
 <a
 href={`https://wa.me/5493329615375?text=${encodeURIComponent(
@@ -441,17 +434,17 @@ function Feature({icon,label,value}:{icon:any,label:string,value:any}){
 
 return(
 
-<div className="flex flex-col items-center bg-gray-50 p-4 rounded-lg">
+<div className="flex flex-col items-center bg-gray-50 p-3 rounded-lg w-full">
 
-<div className="mb-2 text-gray-600">
+<div className="mb-1 text-gray-600">
 {icon}
 </div>
 
-<span className="text-xl font-bold">
+<span className="text-lg font-bold">
 {value||"-"}
 </span>
 
-<span className="text-xs uppercase text-gray-500">
+<span className="text-[10px] uppercase text-gray-500 text-center">
 {label}
 </span>
 

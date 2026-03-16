@@ -27,22 +27,17 @@ priceDesc:"Precio mayor",
 alpha:"A-Z"
 }
 
-/* VALOR DOLAR PARA COMPARACIÓN */
 const USD_RATE = 1200
 
-/* FUNCIÓN PARA COMPARAR PRECIOS */
 const getComparablePrice = (property:any) => {
 
 const price = Number(property.price) || 0
 
-// alquiler está en pesos → convertir a USD
 if(property.operation === "Alquiler"){
 return price / USD_RATE
 }
 
-// venta está en dólares
 return price
-
 }
 
 useEffect(()=>{
@@ -64,8 +59,6 @@ setProperties(data || [])
 loadProperties()
 
 },[])
-
-/* SEARCH + FILTER */
 
 let filteredProperties = properties.filter(p=>{
 
@@ -89,8 +82,6 @@ p.zone === filters.location
 return searchMatch && opMatch && typeMatch && locationMatch
 
 })
-
-/* SORT */
 
 filteredProperties = [...filteredProperties].sort((a,b)=>{
 
@@ -292,18 +283,22 @@ Intentá cambiando los filtros o la búsqueda
 </div>
 
 
-{/* MOBILE FILTER PANEL */}
+{/* MOBILE FILTER MODAL */}
 
 {mobileFilters && (
 
-<div className="fixed inset-0 z-50 flex">
+<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+{/* BACKDROP */}
 
 <div
 className="absolute inset-0 bg-black/40 backdrop-blur-sm"
 onClick={()=>setMobileFilters(false)}
 />
 
-<div className="ml-auto w-80 bg-white h-full shadow-xl p-6 overflow-y-auto">
+{/* MODAL */}
+
+<div className="relative w-full max-w-sm mx-auto bg-white rounded-2xl shadow-xl p-6">
 
 <div className="flex justify-between items-center mb-6">
 
@@ -311,8 +306,11 @@ onClick={()=>setMobileFilters(false)}
 Filtros
 </h3>
 
-<button onClick={()=>setMobileFilters(false)}>
-<X/>
+<button
+onClick={()=>setMobileFilters(false)}
+className="text-gray-500 hover:text-black"
+>
+<X size={20}/>
 </button>
 
 </div>
@@ -358,6 +356,28 @@ className="w-full bg-gray-50 px-4 py-3 rounded-lg shadow-sm"
 <option>Oficina</option>
 <option>Terreno</option>
 <option>Local Comercial</option>
+
+</select>
+
+</div>
+
+<div>
+
+<label className="text-xs font-semibold text-gray-500 block mb-2">
+Zona
+</label>
+
+<select
+value={filters.location}
+onChange={(e)=>setFilters({...filters,location:e.target.value})}
+className="w-full bg-gray-50 px-4 py-3 rounded-lg shadow-sm"
+>
+
+<option value="Todos">Todas las zonas</option>
+<option>Nueva Córdoba</option>
+<option>Centro</option>
+<option>Valle Escondido</option>
+<option>Manantiales</option>
 
 </select>
 

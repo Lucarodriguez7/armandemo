@@ -2,7 +2,7 @@ import React, { useEffect, useState, ReactNode } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
-
+import "mapbox-gl/dist/mapbox-gl.css";
 import { Navbar, Footer, WhatsAppButton } from './components/Layout'
 
 import Home from './pages/Home'

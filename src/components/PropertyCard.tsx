@@ -115,9 +115,21 @@ const PropertyCard: FC<PropertyCardProps> = ({ property }) => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
 
+          {/* GRADIENT SOMBRA IZQUIERDA */}
+
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/10 to-transparent pointer-events-none" />
+
+          {/* LOGO */}
+
+          <img
+            src="https://imgur.com/S0y156n.jpg"
+            alt="logo"
+            className="absolute top-3 left-3 w-8 h-8 object-contain drop-shadow-md"
+          />
+
           {/* BADGES */}
 
-          <div className="absolute top-4 left-4 flex gap-2">
+          <div className="absolute top-4 left-14 flex gap-2">
 
             {property.operation && (
               <span className="bg-black text-white text-xs font-semibold px-3 py-1 rounded-full shadow">

@@ -78,7 +78,7 @@ const Home = () => {
     {
       name: "ZONA NORTE",
       filter: "zona-norte",
-      image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb3?q=80&w=2070"
+      image: "https://plus.unsplash.com/premium_photo-1687960116228-13d383d20188?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
     }
   ]
 
@@ -743,7 +743,8 @@ Ver en ZonaProp
       </h2>
 
       <a
-        href="#"
+        href="https://instagram.com/arman.propiedades"
+        target="_blank"
         className="flex items-center gap-2 text-brand-primary hover:underline"
       >
         <Instagram size={18}/>
@@ -754,12 +755,49 @@ Ver en ZonaProp
 
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
-      {[1,2,3,4].map((i)=>(
-        <img
+      {[
+        {
+          img: "https://imgur.com/akKJixT.jpg",
+          link: "https://www.instagram.com/p/DT_OTgLEs9L/"
+        },
+        {
+          img: "https://imgur.com/z74MLco.jpg",
+          link: "https://www.instagram.com/p/DVMavUQCS6E/"
+        },
+        {
+          img: "https://imgur.com/jWbzRCz.jpg",
+          link: "https://www.instagram.com/p/DVjiLqWCfeO/"
+        },
+        {
+          img: "https://imgur.com/gJZVu5a.jpg",
+          link: "https://www.instagram.com/p/DUWkhxzjYvL/"
+        }
+      ].map((post, i)=>(
+        
+        <a
           key={i}
-          src={`https://picsum.photos/seed/insta${i}/400/400`}
-          className="rounded-lg object-cover w-full h-full hover:opacity-80 transition"
-        />
+          href={post.link}
+          target="_blank"
+          className="relative group block overflow-hidden rounded-lg"
+        >
+
+          {/* Imagen */}
+          <img
+            src={post.img}
+            className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+          />
+
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+
+            <span className="px-5 py-2 text-sm font-semibold bg-white text-black rounded-full shadow-lg transform translate-y-3 group-hover:translate-y-0 transition">
+              Ver publicación
+            </span>
+
+          </div>
+
+        </a>
+
       ))}
 
     </div>
