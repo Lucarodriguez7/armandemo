@@ -256,6 +256,300 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   VIDEO GALLERY COMPONENT
+═══════════════════════════════════════════════════════════════ */
+const videos = [
+  { src: "/videos/video1.mp4", label: "Vista general" },
+  { src: "/videos/video2.mp4", label: "Entorno natural" },
+  { src: "/videos/video3.mp4", label: "Infraestructura" },
+]
+
+const VideoGallery = () => {
+  const [active, setActive] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(true)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const touchStartX = useRef<number | null>(null)
+
+  // When active changes, reload + play the new video
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    v.load()
+    if (isPlaying) v.play().catch(() => {})
+  }, [active])
+
+  const goTo = (idx: number) => setActive((idx + videos.length) % videos.length)
+  const prev = () => goTo(active - 1)
+  const next = () => goTo(active + 1)
+
+  const togglePlay = () => {
+    const v = videoRef.current
+    if (!v) return
+    if (v.paused) { v.play(); setIsPlaying(true) }
+    else          { v.pause(); setIsPlaying(false) }
+  }
+
+  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX }
+  const onTouchEnd   = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 44) diff > 0 ? next() : prev()
+    touchStartX.current = null
+  }
+
+  return (
+    <section style={{ padding: "100px 0", background: "var(--dark)", position: "relative", overflow: "hidden" }}>
+      {/* subtle glow */}
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 50% 100%, rgba(201,169,110,0.06) 0%, transparent 60%)", pointerEvents: "none" }} />
+
+      <div className="section-inner" style={{ position: "relative", zIndex: 1 }}>
+
+        {/* Header */}
+        <motion.div
+          initial="hidden" whileInView="visible" viewport={{ once: true }}
+          variants={{ visible: { transition: { staggerChildren: 0.09 } } }}
+          style={{ textAlign: "center", marginBottom: 52 }}
+        >
+          <motion.p
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
+            style={{ color: "var(--gold)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 16 }}
+          >
+            Galería
+          </motion.p>
+          <motion.h2
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.1 } } }}
+            className="font-display"
+            style={{ fontSize: "clamp(28px,4vw,52px)", fontWeight: 300, color: "#fff" }}
+          >
+            La Feliza en <em style={{ color: "var(--gold-light)" }}>movimiento</em>
+          </motion.h2>
+          <motion.div
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.5, delay: 0.2 } } }}
+            style={{ width: 60, height: 1, background: "linear-gradient(to right, transparent, var(--gold), transparent)", margin: "20px auto 0" }}
+          />
+        </motion.div>
+
+        {/* Main video player */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          style={{ position: "relative", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(201,169,110,0.2)", boxShadow: "0 40px 100px rgba(0,0,0,0.6)" }}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Video */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#000" }}
+            >
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              >
+                <source src={videos[active].src} type="video/mp4" />
+              </video>
+
+              {/* Dark gradient overlay bottom */}
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: "45%",
+                background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+                pointerEvents: "none"
+              }} />
+
+              {/* Label bottom left */}
+              <div style={{
+                position: "absolute", bottom: 20, left: 24,
+                display: "flex", alignItems: "center", gap: 10
+              }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)" }} />
+                <span style={{
+                  fontFamily: "'Jost', sans-serif", fontSize: 13,
+                  color: "rgba(255,255,255,0.85)", letterSpacing: "0.08em",
+                  textTransform: "uppercase"
+                }}>
+                  {videos[active].label}
+                </span>
+              </div>
+
+              {/* Counter top right */}
+              <div style={{
+                position: "absolute", top: 20, right: 20,
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 14, color: "rgba(255,255,255,0.5)"
+              }}>
+                <span style={{ color: "var(--gold-light)", fontSize: 18 }}>{active + 1}</span>
+                <span style={{ margin: "0 4px" }}>/</span>
+                {videos.length}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Play/pause overlay button — center click */}
+          <button
+            onClick={togglePlay}
+            style={{
+              position: "absolute", top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 56, height: 56, borderRadius: "50%",
+              background: "rgba(0,0,0,0.45)", border: "1.5px solid rgba(201,169,110,0.5)",
+              backdropFilter: "blur(6px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", opacity: isPlaying ? 0 : 1,
+              transition: "opacity 0.2s",
+              zIndex: 4
+            }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "1" }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = isPlaying ? "0" : "1" }}
+          >
+            {isPlaying
+              ? <span style={{ color: "var(--gold)", fontSize: 18, lineHeight: 1 }}>⏸</span>
+              : <span style={{ color: "var(--gold)", fontSize: 18, lineHeight: 1, paddingLeft: 3 }}>▶</span>
+            }
+          </button>
+
+          {/* Arrow buttons — desktop sides */}
+          <button
+            onClick={prev}
+            style={{
+              position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
+              width: 44, height: 44, borderRadius: "50%",
+              background: "rgba(0,0,0,0.5)", border: "1px solid rgba(201,169,110,0.35)",
+              backdropFilter: "blur(8px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: "var(--gold-light)",
+              transition: "all 0.2s", zIndex: 4
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(201,169,110,0.25)"; e.currentTarget.style.borderColor = "var(--gold)" }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,0.5)"; e.currentTarget.style.borderColor = "rgba(201,169,110,0.35)" }}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={next}
+            style={{
+              position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)",
+              width: 44, height: 44, borderRadius: "50%",
+              background: "rgba(0,0,0,0.5)", border: "1px solid rgba(201,169,110,0.35)",
+              backdropFilter: "blur(8px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: "var(--gold-light)",
+              transition: "all 0.2s", zIndex: 4
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(201,169,110,0.25)"; e.currentTarget.style.borderColor = "var(--gold)" }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,0.5)"; e.currentTarget.style.borderColor = "rgba(201,169,110,0.35)" }}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </motion.div>
+
+        {/* Thumbnail strip */}
+        <div
+          className="video-thumb-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 12,
+            marginTop: 16
+          }}
+        >
+          {videos.map((v, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              style={{
+                position: "relative",
+                borderRadius: 10,
+                overflow: "hidden",
+                border: i === active ? "2px solid var(--gold)" : "2px solid rgba(255,255,255,0.08)",
+                background: "#0A0908",
+                cursor: "pointer",
+                padding: 0,
+                transition: "border-color 0.25s, opacity 0.25s",
+                opacity: i === active ? 1 : 0.5,
+                aspectRatio: "16/9"
+              }}
+              onMouseEnter={e => { if (i !== active) e.currentTarget.style.opacity = "0.8" }}
+              onMouseLeave={e => { if (i !== active) e.currentTarget.style.opacity = "0.5" }}
+            >
+              <video
+                muted
+                playsInline
+                preload="metadata"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              >
+                <source src={`${v.src}#t=0.5`} type="video/mp4" />
+              </video>
+              {/* Active indicator */}
+              {i === active && (
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: "rgba(201,169,110,0.12)",
+                  display: "flex", alignItems: "center", justifyContent: "center"
+                }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.55)", border: "1.5px solid var(--gold)",
+                    display: "flex", alignItems: "center", justifyContent: "center"
+                  }}>
+                    <span style={{ color: "var(--gold)", fontSize: 10, paddingLeft: 2 }}>▶</span>
+                  </div>
+                </div>
+              )}
+              {/* Label */}
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0,
+                background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
+                padding: "12px 8px 6px",
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 10, color: "rgba(255,255,255,0.75)",
+                letterSpacing: "0.06em", textTransform: "uppercase",
+                textAlign: "left"
+              }}>
+                {v.label}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Mobile: dot indicators (hidden on desktop) */}
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 20 }} className="mobile-only">
+          {videos.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              style={{
+                width: i === active ? 24 : 7, height: 7, borderRadius: 4,
+                background: i === active ? "var(--gold)" : "rgba(201,169,110,0.3)",
+                border: "none", cursor: "pointer", transition: "all 0.3s", padding: 0
+              }}
+            />
+          ))}
+        </div>
+
+      </div>
+
+      {/* Responsive: thumbnail strip → 2×2 on mobile */}
+      <style>{`
+        @media (max-width: 600px) {
+          .video-thumb-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+      `}</style>
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════════ */
 const Proyectos = () => {
@@ -670,9 +964,9 @@ const Proyectos = () => {
         <div className="section-inner" style={{ position: "relative", zIndex: 1 }}>
           <div className="stats-grid">
             {[
-              { n: 42,  suffix: "",    label: "Lotes disponibles" },
+              { n: 120,  suffix: "",    label: "Lotes disponibles" },
               { n: 8,    suffix: "%",   label: "ROI anual estimado" },
-              { n: 10,    suffix: "min", label: "Del centro" },
+              { n: 5,    suffix: "min", label: "Del centro" },
               { n: 2026, suffix: "",    label: "Año de lanzamiento" }
             ].map((s, i) => (
               <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
@@ -744,7 +1038,7 @@ const Proyectos = () => {
           <div className="map-tags" style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 28, flexWrap: "wrap" }}>
             {[
               { icon: <MapPin size={13} />, text: "Camino a San Carlos, Córdoba" },
-              { icon: <Waves size={13} />, text: "A 5 min del centro" },
+              { icon: <Waves size={13} />, text: "A 10 min del centro" },
               { icon: <TreePine size={13} />, text: "Zona de alto crecimiento" }
             ].map((tag, i) => (
               <span key={i} className="map-tag" style={{
@@ -888,6 +1182,11 @@ const Proyectos = () => {
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════
+          GALERÍA DE VIDEOS
+      ══════════════════════════════════ */}
+      <VideoGallery />
 
       {/* ══════════════════════════════════
           SIMULADOR

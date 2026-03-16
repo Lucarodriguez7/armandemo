@@ -79,7 +79,12 @@ const Home = () => {
       name: "ZONA NORTE",
       filter: "zona-norte",
       image: "https://plus.unsplash.com/premium_photo-1687960116228-13d383d20188?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    }
+    },
+    {
+  name:   "Campos",
+  image:  "https://imgur.com/Ltbx7u0.jpg",   // cambiá por tu imagen
+  filter: "terreno",            // tipo de inmueble → "terreno"
+}
   ]
 
 
@@ -335,117 +340,93 @@ const Home = () => {
 </section>
 <section className="py-24 bg-gray-100">
 
-<div className="max-w-7xl mx-auto px-6">
+  <div className="max-w-7xl mx-auto px-6">
 
-<h2
-data-aos="fade-up"
-className="text-3xl md:text-4xl font-bold text-center mb-16 text-brand-primary"
->
-¿Dónde te gustaría vivir?
-</h2>
+    <h2
+      data-aos="fade-up"
+      className="text-3xl md:text-4xl font-bold text-center mb-16 text-brand-primary"
+    >
+      ¿Dónde te gustaría vivir?
+    </h2>
 
-{/* DESKTOP GRID */}
+    {/* DESKTOP GRID — las 4 primeras locations */}
+    <div className="hidden md:grid grid-cols-2 gap-6">
+      {locations.slice(0, 4).map((loc, i) => (
+        <div
+          key={i}
+          data-aos="fade-up"
+          data-aos-delay={i * 100}
+          onClick={() => goToLocation(loc.filter)}
+          className="relative h-[260px] rounded-2xl overflow-hidden cursor-pointer group"
+        >
+          <img
+            src={loc.image}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition" />
+          <div className="absolute inset-0 flex items-center justify-center text-center transition-all duration-500 group-hover:-translate-y-2">
+            <h3 className="text-white text-2xl md:text-3xl font-bold tracking-wide">
+              {loc.name}
+            </h3>
+          </div>
+        </div>
+      ))}
+    </div>
 
-<div className="hidden md:grid grid-cols-2 gap-6">
+    {/* DESKTOP CAMPOS BANNER — usa locations[4] directamente */}
+    <div className="hidden md:block mt-4" data-aos="fade-up">
+      <p className="text-center text-gray-400 text-sm my-5">
+        o si querés invertir
+      </p>
+      <div
+        onClick={() => goToLocation(locations[4].filter)}
+        className="relative h-[200px] rounded-2xl overflow-hidden cursor-pointer group"
+      >
+        <img
+          src={locations[4].image}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition" />
+        <div className="absolute inset-0 flex items-center justify-center text-center transition-all duration-500 group-hover:-translate-y-2">
+          <h3 className="text-white text-2xl md:text-3xl font-bold tracking-wide">
+            {locations[4].name}
+          </h3>
+        </div>
+      </div>
+    </div>
 
-{locations.map((loc,i)=>(
+    {/* MOBILE SWIPER — todas las locations incluida Campos */}
+    <div className="md:hidden">
+      <Swiper
+        spaceBetween={20}
+        slidesPerView={1.2}
+        grabCursor={true}
+      >
+        {locations.map((loc, i) => (
+          <SwiperSlide key={i}>
+            <div
+              onClick={() => goToLocation(loc.filter)}
+              className="relative h-[220px] rounded-2xl overflow-hidden cursor-pointer"
+            >
+              <img
+                src={loc.image}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/30" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <h3 className="text-white text-xl font-bold text-center">
+                  {loc.name}
+                </h3>
+              </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
 
-<div
-key={i}
-data-aos="fade-up"
-data-aos-delay={i*100}
-onClick={()=>goToLocation(loc.filter)}
-className="relative h-[260px] rounded-2xl overflow-hidden cursor-pointer group"
->
-
-{/* image */}
-
-<img
-src={loc.image}
-className="
-absolute inset-0 w-full h-full object-cover
-transition-transform duration-700
-group-hover:scale-110
-"
-/>
-
-{/* overlay */}
-
-<div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition"/>
-
-{/* text */}
-
-<div
-className="
-absolute inset-0
-flex items-center justify-center
-text-center
-transition-all duration-500
-group-hover:-translate-y-2
-"
->
-
-<h3 className="text-white text-2xl md:text-3xl font-bold tracking-wide">
-{loc.name}
-</h3>
-
-</div>
-
-</div>
-
-))}
-
-</div>
-
-{/* MOBILE SWIPER */}
-
-<div className="md:hidden">
-
-<Swiper
-spaceBetween={20}
-slidesPerView={1.2}
-grabCursor={true}
->
-
-{locations.map((loc,i)=>(
-
-<SwiperSlide key={i}>
-
-<div
-onClick={()=>goToLocation(loc.filter)}
-className="relative h-[220px] rounded-2xl overflow-hidden cursor-pointer"
->
-
-<img
-src={loc.image}
-className="absolute inset-0 w-full h-full object-cover"
-/>
-
-<div className="absolute inset-0 bg-black/30"/>
-
-<div className="absolute inset-0 flex items-center justify-center">
-
-<h3 className="text-white text-xl font-bold text-center">
-{loc.name}
-</h3>
-
-</div>
-
-</div>
-
-</SwiperSlide>
-
-))}
-
-</Swiper>
-
-</div>
-
-</div>
+  </div>
 
 </section>
-
-
 
      {/* Featured Properties */}
 
