@@ -14,12 +14,16 @@ LayoutDashboard,
 Building2,
 BarChart3,
 Edit,
+Search,
+X,
 Copy
 } from "lucide-react"
 
 export default function Dashboard(){
 
 const [properties,setProperties] = useState([])
+const [search,setSearch] = useState("")
+const [filteredProperties,setFilteredProperties] = useState([])
 const [totalVisits,setTotalVisits] = useState(0)
 const [totalLeads,setTotalLeads] = useState(0)
 const [conversion,setConversion] = useState(0)
@@ -84,6 +88,7 @@ const { data:propertiesData } = await supabase
 .order("id",{ascending:false})
 
 setProperties(propertiesData || [])
+setFilteredProperties(propertiesData || [])
 
 const { data: visits } = await supabase
 .from("events")
@@ -113,6 +118,20 @@ setConversion(Math.round((leadsCount / uniqueVisits) * 100))
 setLoading(false)
 
 }
+
+useEffect(()=>{
+
+const q = search.toLowerCase()
+
+const filtered = properties.filter(p=>
+p.title?.toLowerCase().includes(q) ||
+p.city?.toLowerCase().includes(q) ||
+p.operation?.toLowerCase().includes(q)
+)
+
+setFilteredProperties(filtered)
+
+},[search,properties])
 
 
 /* ---------- EFFECTS ---------- */
@@ -370,6 +389,36 @@ Nueva propiedad
 </div>
 
 </div>
+{/* SEARCH BAR */}
+
+<div className="mb-6 flex justify-between items-center">
+
+<div className="relative w-[420px]">
+
+<Search
+size={18}
+className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+/>
+
+<input
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+placeholder="Buscar propiedades..."
+className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-black/20 outline-none transition"
+/>
+
+{search && (
+<button
+onClick={()=>setSearch("")}
+className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+>
+<X size={16}/>
+</button>
+)}
+
+</div>
+
+</div>
 
 
 {/* TABLE */}
@@ -393,7 +442,7 @@ Nueva propiedad
 
 <tbody className="text-sm">
 
-{properties.map(property=>{
+{filteredProperties.map(property=>{
 
 const rawImage = getFirstImage(property)
 const image = getImageUrl(rawImage)
