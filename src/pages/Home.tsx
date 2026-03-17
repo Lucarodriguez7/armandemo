@@ -63,26 +63,26 @@ const Home = () => {
     {
       name: "CENTRO",
       filter: "centro",
-      image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"
+      image: "https://imgur.com/DijoPDF.jpg"
     },
     {
       name: "NUEVA CÓRDOBA",
       filter: "nueva-cordoba",
-      image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2070"
+      image: "https://imgur.com/YyUnEgt.jpg"
     },
     {
       name: "ZONA SUR",
       filter: "zona-sur",
-      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2070"
+      image: "https://imgur.com/dr3neWx.jpg"
     },
     {
       name: "ZONA NORTE",
       filter: "zona-norte",
-      image: "https://plus.unsplash.com/premium_photo-1687960116228-13d383d20188?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      image: "https://imgur.com/6XGjjhL.jpg"
     },
     {
   name:   "Campos",
-  image:  "https://imgur.com/Ltbx7u0.jpg",   // cambiá por tu imagen
+  image:  "https://imgur.com/j2Ashuq.jpg",   // cambiá por tu imagen
   filter: "terreno",            // tipo de inmueble → "terreno"
 }
   ]
@@ -102,7 +102,39 @@ const Home = () => {
     return () => observer.disconnect()
 
   }, [])
+useEffect(() => {
 
+  function getDeviceId() {
+    let deviceId = localStorage.getItem("device_id");
+
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem("device_id", deviceId);
+    }
+
+    return deviceId;
+  }
+
+  async function trackVisit() {
+
+    const alreadyTracked = sessionStorage.getItem("visit_tracked");
+
+    if (alreadyTracked) return;
+const { error } = await supabase.from("events").insert({
+  event_type: "site_visit",
+  device_id: getDeviceId(),
+});
+
+if (error) {
+  console.error("Tracking error:", error);
+}
+
+    sessionStorage.setItem("visit_tracked", "true");
+  }
+
+  trackVisit();
+
+}, []);
 
   useEffect(() => {
 
@@ -188,17 +220,16 @@ const Home = () => {
 
   </div>
 
+{/* CONTENT */}
+<div className="relative z-10 max-w-6xl mx-auto px-6 text-center pt-6 md:pt-0">
 
-  {/* CONTENT */}
-  <div className="relative z-10 max-w-6xl mx-auto px-6 text-center pt-6 md:pt-0">
-
-    <h1
-      data-aos="fade-up"
-      className="text-white text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
-    >
-      Transformando la experiencia <br/>
-      <span className="text-white/80">inmobiliaria</span>
-    </h1>
+  <h1
+    data-aos="fade-up"
+    className="text-white text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15]"
+  >
+    Transformando la forma de conectar <br/>
+    <span className="text-white/80">personas con propiedades</span>
+  </h1>
 
     <p
       data-aos="fade-up"
@@ -632,9 +663,7 @@ data-aos="fade-up"
 
 <div className="text-center mb-16">
 
-<span className="text-xs uppercase tracking-widest text-gray-400 font-semibold block mb-3">
-Reputación
-</span>
+
 
 <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
 Valoraciones de nuestros clientes
