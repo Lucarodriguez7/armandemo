@@ -95,7 +95,7 @@ const FontStyle: React.FC = () => (
     }
 
     html, body { overflow-x: hidden; max-width: 100%; }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     .font-display { font-family: 'Cormorant Garamond', serif; }
     .font-body    { font-family: 'Jost', sans-serif; }

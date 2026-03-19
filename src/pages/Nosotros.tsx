@@ -96,33 +96,33 @@ img:"https://imgur.com/6mcX8Xj.jpg"
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
             {team.map((member,idx)=>(
-              
+
               <div
               key={idx}
-              className="group bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl"
+              className="group relative rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl aspect-[3/4]"
               >
 
-                <div className="overflow-hidden">
+                <img
+                src={member.img}
+                alt={member.name}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
 
-                  <img
-                  src={member.img}
-                  alt={member.name}
-                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
+                {/* Gradiente inferior */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                </div>
+                {/* Texto sobre la imagen */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
 
-                <div className="p-6 text-center">
-
-                  <h3 className="text-lg font-display font-bold text-brand-primary">
+                  <h3 className="text-base font-bold text-white leading-snug">
                     {member.name}
                   </h3>
 
-                  <p className="text-xs uppercase tracking-wider text-brand-accent font-bold mt-1 mb-3">
+                  <p className="text-[10px] uppercase tracking-widest text-white/70 font-bold mt-1 mb-2 leading-tight">
                     {member.role}
                   </p>
 
-                  <p className="text-sm text-brand-secondary leading-relaxed">
+                  <p className="text-xs text-white/60 leading-relaxed">
                     {member.desc}
                   </p>
 
