@@ -2,17 +2,20 @@ import React, { useState, useEffect } from "react";
 import { Search, SlidersHorizontal, X, ArrowUpDown } from "lucide-react";
 import PropertyCard from "../components/PropertyCard";
 import { supabase } from "../lib/supabaseClient";
+import { useSearchParams } from "react-router-dom";
 
 const Catalog = () => {
+
+const [searchParams] = useSearchParams()
 
 const [properties,setProperties] = useState<any[]>([])
 const [search,setSearch] = useState("")
 const [mobileFilters,setMobileFilters] = useState(false)
 
 const [filters,setFilters] = useState({
-operation:"Todos",
-type:"Todos",
-location:"Todos"
+operation: searchParams.get("operacion") || "Todos",
+type: searchParams.get("tipo") || "Todos",
+location: searchParams.get("zona") || "Todos"
 })
 
 const sortOptions = ["recent","priceAsc","priceDesc","alpha"]
@@ -196,6 +199,7 @@ className="w-full bg-gray-50 px-4 py-3 rounded-lg text-sm shadow-sm"
 <option>Dúplex</option>
 <option>Oficina</option>
 <option>Terreno</option>
+<option>Lote</option>
 <option>Local Comercial</option>
 
 </select>
@@ -217,6 +221,8 @@ className="w-full bg-gray-50 px-4 py-3 rounded-lg text-sm shadow-sm"
 <option value="Todos">Todas las zonas</option>
 <option>Nueva Córdoba</option>
 <option>Centro</option>
+<option>Zona Sur</option>
+<option>Zona Norte</option>
 <option>Valle Escondido</option>
 <option>Manantiales</option>
 
@@ -355,6 +361,7 @@ className="w-full bg-gray-50 px-4 py-3 rounded-lg shadow-sm"
 <option>Dúplex</option>
 <option>Oficina</option>
 <option>Terreno</option>
+<option>Lote</option>
 <option>Local Comercial</option>
 
 </select>
@@ -376,6 +383,8 @@ className="w-full bg-gray-50 px-4 py-3 rounded-lg shadow-sm"
 <option value="Todos">Todas las zonas</option>
 <option>Nueva Córdoba</option>
 <option>Centro</option>
+<option>Zona Sur</option>
+<option>Zona Norte</option>
 <option>Valle Escondido</option>
 <option>Manantiales</option>
 

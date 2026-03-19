@@ -55,36 +55,36 @@ const Home = () => {
 
   const [filters, setFilters] = useState({
     operacion: "Venta",
-    tipo: "Departamento",
+    tipo: "",
     zona: "Todas"
   })
 
   const locations = [
     {
       name: "CENTRO",
-      filter: "centro",
+      zona: "Centro",
       image: "https://imgur.com/DijoPDF.jpg"
     },
     {
       name: "NUEVA CÓRDOBA",
-      filter: "nueva-cordoba",
+      zona: "Nueva Córdoba",
       image: "https://imgur.com/YyUnEgt.jpg"
     },
     {
       name: "ZONA SUR",
-      filter: "zona-sur",
+      zona: "Zona Sur",
       image: "https://imgur.com/dr3neWx.jpg"
     },
     {
       name: "ZONA NORTE",
-      filter: "zona-norte",
+      zona: "Zona Norte",
       image: "https://imgur.com/6XGjjhL.jpg"
     },
     {
-  name:   "Campos",
-  image:  "https://imgur.com/j2Ashuq.jpg",   // cambiá por tu imagen
-  filter: "terreno",            // tipo de inmueble → "terreno"
-}
+      name: "Campos",
+      tipo: "Lote",
+      image: "https://imgur.com/j2Ashuq.jpg"
+    }
   ]
 
 
@@ -156,8 +156,11 @@ if (error) {
   }, [])
 
 
-  const goToLocation = (zone) => {
-    navigate(`/propiedades?zona=${zone}`)
+  const goToLocation = (loc: { zona?: string; tipo?: string }) => {
+    const params = new URLSearchParams()
+    if (loc.zona) params.set("zona", loc.zona)
+    if (loc.tipo) params.set("tipo", loc.tipo)
+    navigate(`/propiedades?${params.toString()}`)
   }
 
   const handleChange = (e) => {
@@ -177,7 +180,7 @@ if (error) {
 
     if (filters.operacion) params.append("operacion", filters.operacion)
     if (filters.tipo) params.append("tipo", filters.tipo)
-    if (filters.zona) params.append("zona", filters.zona)
+    if (filters.zona && filters.zona !== "Todas") params.append("zona", filters.zona)
 
     navigate(`/propiedades?${params.toString()}`)
 
@@ -299,10 +302,14 @@ if (error) {
               onChange={handleChange}
               className="w-full bg-transparent text-white text-sm outline-none cursor-pointer"
             >
-              <option className="text-black">Departamento</option>
+              <option value="" className="text-black">Todos</option>
               <option className="text-black">Casa</option>
+              <option className="text-black">Departamento</option>
+              <option className="text-black">Dúplex</option>
+              <option className="text-black">Oficina</option>
               <option className="text-black">Terreno</option>
-              <option className="text-black">Local</option>
+              <option className="text-black">Lote</option>
+              <option className="text-black">Local Comercial</option>
             </select>
 
           </div>
@@ -312,7 +319,7 @@ if (error) {
           <div className="px-5 py-3 border-t md:border-t-0 md:border-l border-white/20 text-left">
 
             <label className="text-white/60 text-[10px] font-semibold uppercase tracking-wider block mb-1">
-              Ubicación
+              Zona
             </label>
 
             <select
@@ -324,7 +331,10 @@ if (error) {
               <option className="text-black">Todas</option>
               <option className="text-black">Nueva Córdoba</option>
               <option className="text-black">Centro</option>
+              <option className="text-black">Zona Sur</option>
+              <option className="text-black">Zona Norte</option>
               <option className="text-black">Valle Escondido</option>
+              <option className="text-black">Manantiales</option>
             </select>
 
           </div>
@@ -387,7 +397,7 @@ if (error) {
           key={i}
           data-aos="fade-up"
           data-aos-delay={i * 100}
-          onClick={() => goToLocation(loc.filter)}
+          onClick={() => goToLocation(loc)}
           className="relative h-[260px] rounded-2xl overflow-hidden cursor-pointer group"
         >
           <img
@@ -410,7 +420,7 @@ if (error) {
         o si querés invertir
       </p>
       <div
-        onClick={() => goToLocation(locations[4].filter)}
+        onClick={() => goToLocation(locations[4])}
         className="relative h-[200px] rounded-2xl overflow-hidden cursor-pointer group"
       >
         <img
@@ -436,7 +446,7 @@ if (error) {
         {locations.map((loc, i) => (
           <SwiperSlide key={i}>
             <div
-              onClick={() => goToLocation(loc.filter)}
+              onClick={() => goToLocation(loc)}
               className="relative h-[220px] rounded-2xl overflow-hidden cursor-pointer"
             >
               <img

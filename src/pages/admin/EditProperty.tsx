@@ -22,6 +22,7 @@ const [price,setPrice] = useState("")
 const [city,setCity] = useState("")
 const [type,setType] = useState("")
 const [operation,setOperation] = useState("Venta")
+const [zone,setZone] = useState("")
 const [description,setDescription] = useState("")
 const [bedrooms,setBedrooms] = useState("")
 const [bathrooms,setBathrooms] = useState("")
@@ -96,6 +97,8 @@ setBedrooms(data.bedrooms?.toString() || "")
 setBathrooms(data.bathrooms?.toString() || "")
 setArea(data.area?.toString() || "")
 setFeatured(data.featured || false)
+
+setZone(data.zone || "")
 
 setLatitude(data.latitude)
 setLongitude(data.longitude)
@@ -294,6 +297,7 @@ price:Number(price),
 city,
 type,
 operation,
+zone,
 description,
 bedrooms:Number(bedrooms),
 bathrooms:Number(bathrooms),
@@ -369,6 +373,32 @@ onChange={(e)=>setCity(e.target.value)}
 placeholder="Ciudad"
 className="w-full border p-3 rounded"
 />
+
+<select className="w-full border p-3 rounded" value={operation} onChange={(e)=>setOperation(e.target.value)}>
+<option>Venta</option>
+<option>Alquiler</option>
+</select>
+
+<select className="w-full border p-3 rounded" value={type} onChange={(e)=>setType(e.target.value)}>
+<option value="">Tipo de inmueble</option>
+<option>Casa</option>
+<option>Departamento</option>
+<option>Dúplex</option>
+<option>Oficina</option>
+<option>Terreno</option>
+<option>Lote</option>
+<option>Local Comercial</option>
+</select>
+
+<select className="w-full border p-3 rounded" value={zone} onChange={(e)=>setZone(e.target.value)}>
+<option value="">Zona</option>
+<option>Nueva Córdoba</option>
+<option>Centro</option>
+<option>Zona Sur</option>
+<option>Zona Norte</option>
+<option>Valle Escondido</option>
+<option>Manantiales</option>
+</select>
 
 <textarea
 value={description}

@@ -20,6 +20,7 @@ const [price,setPrice] = useState("")
 const [city,setCity] = useState("")
 const [type,setType] = useState("")
 const [operation,setOperation] = useState("Venta")
+const [zone,setZone] = useState("")
 const [description,setDescription] = useState("")
 const [bedrooms,setBedrooms] = useState("")
 const [bathrooms,setBathrooms] = useState("")
@@ -286,6 +287,7 @@ price:Number(price),
 city,
 type,
 operation,
+zone,
 description,
 bedrooms:Number(bedrooms),
 bathrooms:Number(bathrooms),
@@ -350,7 +352,26 @@ Nueva Propiedad
 <option>Alquiler</option>
 </select>
 
-<input placeholder="Tipo" className="w-full border p-3 rounded" value={type} onChange={(e)=>setType(e.target.value)}/>
+<select className="w-full border p-3 rounded" value={type} onChange={(e)=>setType(e.target.value)}>
+<option value="">Tipo de inmueble</option>
+<option>Casa</option>
+<option>Departamento</option>
+<option>Dúplex</option>
+<option>Oficina</option>
+<option>Terreno</option>
+<option>Lote</option>
+<option>Local Comercial</option>
+</select>
+
+<select className="w-full border p-3 rounded" value={zone} onChange={(e)=>setZone(e.target.value)}>
+<option value="">Zona</option>
+<option>Nueva Córdoba</option>
+<option>Centro</option>
+<option>Zona Sur</option>
+<option>Zona Norte</option>
+<option>Valle Escondido</option>
+<option>Manantiales</option>
+</select>
 
 <textarea placeholder="Descripción" className="w-full border p-3 rounded h-32" value={description} onChange={(e)=>setDescription(e.target.value)}/>
 
