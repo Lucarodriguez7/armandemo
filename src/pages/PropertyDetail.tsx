@@ -287,7 +287,7 @@ Abrir en Google Maps
 </div>
 
 <a
-href={`https://wa.me/5493329615375?text=${encodeURIComponent(
+href={`https://wa.me/5493515052474?text=${encodeURIComponent(
 `Hola, me interesa la propiedad "${property.title}"`
 )}`}
 target="_blank"
