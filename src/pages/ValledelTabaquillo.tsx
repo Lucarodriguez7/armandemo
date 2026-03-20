@@ -264,11 +264,10 @@ const VideoModalTab: React.FC<{ video: VideoItem; onClose: () => void }> = memo(
   )
 })
 
-/* ─── VIDEO GALLERY ─────────────────────────────────────────── */
 const videosTab: VideoItem[] = [
-  { src: "../public/videos/tabaquillo1.mp4", label: "El río" },
-  { src: "../public/videos/tabaquillo2.mp4", label: "Entorno serrano" },
-  { src: "../public/videos/tabaquillo3.mp4", label: "Los lotes" },
+  { src: "/videos/tabaquillo1.mp4", label: "El río" },
+  { src: "/videos/tabaquillo2.mp4", label: "Entorno serrano" },
+  { src: "/videos/tabaquillo3.mp4", label: "Los lotes" },
 ]
 type Direction = 1 | -1
 
