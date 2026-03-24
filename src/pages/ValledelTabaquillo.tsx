@@ -530,8 +530,8 @@ const ValledelTabaquillo: React.FC = () => {
   ]
 
   // TODO: actualizar con coordenadas exactas de San Miguel de los Ríos
-  const latitude  = -31.9200
-  const longitude = -64.9300
+  const latitude  = -32.0432852
+  const longitude = -64.7501876
   const minInv    = 115000
   const maxInv    = 135000
   const RATE      = 0.09
@@ -899,6 +899,18 @@ const ValledelTabaquillo: React.FC = () => {
                   {tag.icon} {tag.text}
                 </span>
               ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 24 }}>
+              <a
+                href="https://www.google.com/maps/place/San+Miguel+de+los+R%C3%ADos/@-32.0432852,-64.7501876,17z/data=!3m1!4b1!4m6!3m5!1s0x95d2c877d0a9ffc3:0x9f7b31cd6e23ee4a!8m2!3d-32.0432852!4d-64.7501876!16s%2Fg%2F11c6qpv4v0!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDMyMi4wIKXMDSoASAFQAw%3D%3D"
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--stone)", color: "#fff", padding: "12px 24px", borderRadius: 50, fontSize: 13, fontWeight: 500, letterSpacing: "0.06em", textDecoration: "none", transition: "all 0.25s", boxShadow: "0 6px 24px rgba(139,115,85,0.35)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,115,85,0.5)" }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 6px 24px rgba(139,115,85,0.35)" }}
+              >
+                <MapPin size={14} /> Ver en Google Maps
+              </a>
             </div>
           </div>
         </div>
