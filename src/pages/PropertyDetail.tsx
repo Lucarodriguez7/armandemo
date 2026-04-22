@@ -16,6 +16,7 @@ Phone
 } from "lucide-react"
 
 import PropertyCard from "../components/PropertyCard"
+import ShareButton from "../components/ShareButton"
 
 const STORAGE_URL =
 "https://nnybfkvrruukkfprjzew.supabase.co/storage/v1/object/public/properties/"
@@ -274,11 +275,14 @@ Abrir en Google Maps
 {property.title}
 </h1>
 
-<div className="flex items-center text-gray-500 mb-4">
+<div className="flex items-center justify-between text-gray-500 mb-4 w-full">
 
+<div className="flex items-center">
 <MapPin size={16} className="mr-2"/>
-
 {locationText}
+</div>
+
+<ShareButton propertyId={property.id} />
 
 </div>
 
