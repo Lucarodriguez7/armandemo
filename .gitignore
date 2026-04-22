@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Auto-generado por scripts/generate-previews.mjs
+public/preview/
