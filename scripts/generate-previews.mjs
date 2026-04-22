@@ -1,15 +1,20 @@
 /**
  * generate-previews.mjs
  * =====================
- * Obtiene todas las propiedades publicadas de Supabase y genera
- * archivos HTML estáticos en /public/preview/<id>.html con meta
- * tags Open Graph correctas.
+ * Modos de uso:
  *
- * Uso:
- *   npm run generate-previews
+ *   node scripts/generate-previews.mjs
+ *     → Obtiene propiedades de Supabase, genera HTMLs en /public/preview
+ *       y los copia a /dist/preview si la carpeta dist ya existe.
  *
- * Se ejecuta automáticamente antes del build si usas:
- *   npm run build
+ *   node scripts/generate-previews.mjs --copy-to-dist
+ *     → Solo copia los HTMLs existentes de /public/preview → /dist/preview.
+ *       Se usa como paso `postbuild` (después de que vite build crea /dist).
+ *
+ * Scripts de npm:
+ *   prebuild  → node scripts/generate-previews.mjs
+ *   build     → vite build
+ *   postbuild → node scripts/generate-previews.mjs --copy-to-dist
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -19,64 +24,39 @@ import { fileURLToPath } from 'url'
 
 // ─── Configuración ────────────────────────────────────────────────────────────
 
-// Estos valores son los mismos que usa supabaseClient.ts
-const SUPABASE_URL  = 'https://nnybfkvrruukkfprjzew.supabase.co'
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ueWJma3ZycnV1a2tmcHJqemV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDkzMTIsImV4cCI6MjA4ODM4NTMxMn0.jeq9Vul3ENr9Rx8fuY3v_dZkOe4Kg6ShjW56Eqbg5dU'
+const SUPABASE_URL = 'https://nnybfkvrruukkfprjzew.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ueWJma3ZycnV1a2tmcHJqemV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDkzMTIsImV4cCI6MjA4ODM4NTMxMn0.jeq9Vul3ENr9Rx8fuY3v_dZkOe4Kg6ShjW56Eqbg5dU'
+const STORAGE_URL  = 'https://nnybfkvrruukkfprjzew.supabase.co/storage/v1/object/public/properties/'
+const SITE_URL     = process.env.SITE_URL || 'https://armanpropiedades.com'
 
-// URL de almacenamiento de imágenes en Supabase Storage
-const STORAGE_URL   = 'https://nnybfkvrruukkfprjzew.supabase.co/storage/v1/object/public/properties/'
-
-// Dominio público del sitio — cámbialo por tu dominio de producción
-// Puedes también leerlo de una variable de entorno: process.env.SITE_URL
-const SITE_URL = process.env.SITE_URL || 'https://armanpropiedades.com'
-
-// ─── Rutas de archivos ────────────────────────────────────────────────────────
+// ─── Rutas ────────────────────────────────────────────────────────────────────
 
 const __dirname   = path.dirname(fileURLToPath(import.meta.url))
 const ROOT_DIR    = path.resolve(__dirname, '..')
-const PREVIEW_DIR = path.join(ROOT_DIR, 'public', 'preview')
+const PUBLIC_PREVIEW_DIR = path.join(ROOT_DIR, 'public', 'preview')
+const DIST_PREVIEW_DIR   = path.join(ROOT_DIR, 'dist', 'preview')
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Devuelve la URL de la imagen principal de una propiedad.
- * Soporta: array JSON, string JSON, string simple.
- */
 function getMainImageUrl(imagesField) {
   if (!imagesField) return null
-
   let imgs = []
   try {
-    if (Array.isArray(imagesField)) {
-      imgs = imagesField
-    } else if (typeof imagesField === 'string') {
-      imgs = JSON.parse(imagesField)
-    }
+    if (Array.isArray(imagesField))        imgs = imagesField
+    else if (typeof imagesField === 'string') imgs = JSON.parse(imagesField)
   } catch {
-    // Si no es JSON válido, tratarlo como nombre de archivo directo
     imgs = [imagesField]
   }
-
   if (!imgs.length) return null
-
   const first = imgs[0]
-  // Si ya es una URL completa, devolverla tal cual
   if (first.startsWith('http')) return first
-
   return `${STORAGE_URL}${encodeURIComponent(first)}`
 }
 
-/**
- * Genera texto para og:description a partir de los datos de la propiedad.
- * Usa la descripción real o crea una automática basada en características.
- */
 function buildDescription(property) {
   if (property.description && property.description.trim().length > 10) {
-    // Limitar a 160 caracteres para las previews
     return property.description.trim().slice(0, 160).replace(/\r?\n/g, ' ')
   }
-
-  // Descripción automática
   const parts = []
   if (property.operation) parts.push(property.operation)
   if (property.type)      parts.push(property.type)
@@ -84,14 +64,17 @@ function buildDescription(property) {
   if (property.bedrooms)  parts.push(`${property.bedrooms} hab.`)
   if (property.bathrooms) parts.push(`${property.bathrooms} baños`)
   if (property.city)      parts.push(`en ${property.city}`)
-
-  const desc = parts.join(' · ')
-  return desc || 'Propiedad en Arman Propiedades'
+  return parts.join(' · ') || 'Propiedad en Arman Propiedades'
 }
 
-/**
- * Genera el HTML estático de la página de preview.
- */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,  '&amp;')
+    .replace(/"/g,  '&quot;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+}
+
 function buildHTML(property) {
   const id          = property.id
   const title       = property.title || `Propiedad #${id}`
@@ -99,9 +82,7 @@ function buildHTML(property) {
   const imageUrl    = getMainImageUrl(property.images) || `${SITE_URL}/og-default.jpg`
   const pageUrl     = `${SITE_URL}/propiedades/${id}`
   const previewUrl  = `${SITE_URL}/preview/${id}.html`
-
-  // Precio formateado
-  const currency    = property.currency || (property.operation?.toLowerCase() === 'alquiler' ? 'ARS' : 'USD')
+  const currency    = property.operation?.toLowerCase() === 'alquiler' ? 'ARS' : 'USD'
   const price       = property.price
     ? `${currency} ${new Intl.NumberFormat('es-AR').format(property.price)}`
     : ''
@@ -115,15 +96,15 @@ function buildHTML(property) {
   <title>${escapeHtml(fullTitle)}</title>
 
   <!-- Open Graph / Facebook / WhatsApp -->
-  <meta property="og:type"        content="article" />
-  <meta property="og:site_name"   content="Arman Propiedades" />
-  <meta property="og:url"         content="${escapeHtml(previewUrl)}" />
-  <meta property="og:title"       content="${escapeHtml(fullTitle)}" />
-  <meta property="og:description" content="${escapeHtml(description)}" />
-  <meta property="og:image"       content="${escapeHtml(imageUrl)}" />
+  <meta property="og:type"         content="article" />
+  <meta property="og:site_name"    content="Arman Propiedades" />
+  <meta property="og:url"          content="${escapeHtml(previewUrl)}" />
+  <meta property="og:title"        content="${escapeHtml(fullTitle)}" />
+  <meta property="og:description"  content="${escapeHtml(description)}" />
+  <meta property="og:image"        content="${escapeHtml(imageUrl)}" />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:locale"      content="es_AR" />
+  <meta property="og:locale"       content="es_AR" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
@@ -131,85 +112,115 @@ function buildHTML(property) {
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image"       content="${escapeHtml(imageUrl)}" />
 
-  <!-- SEO básico -->
+  <!-- SEO -->
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${escapeHtml(pageUrl)}" />
 
-  <!-- Redirección inmediata para navegadores humanos -->
-  <script>
-    // Los crawlers de redes sociales NO ejecutan JavaScript.
-    // Este script solo se ejecuta en navegadores reales,
-    // redirigiendo al usuario a la SPA de React.
-    window.location.replace("${pageUrl}");
-  </script>
-
-  <!-- Fallback: meta refresh por si el JS está bloqueado -->
-  <noscript>
-    <meta http-equiv="refresh" content="0; url=${pageUrl}" />
-  </noscript>
+  <!-- Redirección para navegadores humanos (crawlers no ejecutan JS) -->
+  <script>window.location.replace("${pageUrl}");</script>
+  <noscript><meta http-equiv="refresh" content="0; url=${pageUrl}" /></noscript>
 
   <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .card {
-      text-align: center;
-      max-width: 480px;
-      padding: 2rem;
-    }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #334155;
-      border-top-color: #f59e0b;
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-      margin: 0 auto 1.5rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    a { color: #f59e0b; }
+    body{font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;
+      display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+    .card{text-align:center;max-width:480px;padding:2rem}
+    .spinner{width:40px;height:40px;border:4px solid #334155;border-top-color:#f59e0b;
+      border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    a{color:#f59e0b}
   </style>
 </head>
 <body>
   <div class="card">
     <div class="spinner"></div>
     <p>Redirigiendo a la propiedad…</p>
-    <p><a href="${pageUrl}">Hacer clic aquí si no se redirige automáticamente.</a></p>
+    <p><a href="${pageUrl}">Hacer clic aquí si no fuiste redirigido/a.</a></p>
   </div>
 </body>
 </html>
 `
 }
 
-/** Escapa caracteres HTML peligrosos en atributos */
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g,  '&amp;')
-    .replace(/"/g,  '&quot;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
+// ─── Función: copiar public/preview → dist/preview ───────────────────────────
+
+function copyToDistPreview() {
+  const sep = '─'.repeat(55)
+  console.log()
+  console.log('📦  Copiando previews a /dist/preview…')
+  console.log(sep)
+
+  // Verificar que public/preview existe y tiene archivos
+  if (!fs.existsSync(PUBLIC_PREVIEW_DIR)) {
+    console.warn('⚠️   /public/preview no existe. Ejecutá primero: npm run generate-previews')
+    return 0
+  }
+
+  const htmlFiles = fs.readdirSync(PUBLIC_PREVIEW_DIR).filter(f => f.endsWith('.html'))
+
+  if (htmlFiles.length === 0) {
+    console.warn('⚠️   No hay archivos .html en /public/preview para copiar.')
+    return 0
+  }
+
+  // Verificar que dist existe (lo crea vite build)
+  if (!fs.existsSync(path.join(ROOT_DIR, 'dist'))) {
+    console.warn('⚠️   La carpeta /dist no existe. Ejecutá primero: npm run build')
+    return 0
+  }
+
+  // Crear dist/preview
+  fs.mkdirSync(DIST_PREVIEW_DIR, { recursive: true })
+
+  let copied = 0
+  let errors = 0
+
+  for (const file of htmlFiles) {
+    try {
+      const src  = path.join(PUBLIC_PREVIEW_DIR, file)
+      const dest = path.join(DIST_PREVIEW_DIR, file)
+      fs.copyFileSync(src, dest)
+      copied++
+    } catch (err) {
+      console.error(`  ✗  Error copiando ${file}:`, err.message)
+      errors++
+    }
+  }
+
+  console.log(`  ✓  ${copied} archivos copiados a: ${DIST_PREVIEW_DIR}`)
+  if (errors) console.warn(`  ⚠️  ${errors} errores durante la copia.`)
+  console.log(sep)
+  console.log(`🎉  /dist/preview listo con ${copied} HTMLs.`)
+  console.log()
+  console.log('🌐  URLs públicas para WhatsApp/Facebook:')
+  console.log(`    ${SITE_URL}/preview/<id>.html`)
+  console.log()
+
+  return copied
 }
 
 // ─── Script principal ─────────────────────────────────────────────────────────
 
 async function main() {
+  const args       = process.argv.slice(2)
+  const copyOnly   = args.includes('--copy-to-dist')
+  const sep        = '─'.repeat(55)
+
+  // ── MODO: solo copiar (postbuild) ────────────────────────────────────────
+  if (copyOnly) {
+    console.log('📋  Arman Propiedades — Postbuild: copia previews a /dist')
+    copyToDistPreview()
+    return
+  }
+
+  // ── MODO: generación completa (prebuild / manual) ─────────────────────────
   console.log('🏠  Arman Propiedades — Generador de previews Open Graph')
-  console.log('─'.repeat(55))
+  console.log(sep)
 
-  // Crear el directorio de salida si no existe
-  fs.mkdirSync(PREVIEW_DIR, { recursive: true })
+  // Crear public/preview
+  fs.mkdirSync(PUBLIC_PREVIEW_DIR, { recursive: true })
 
-  // Inicializar cliente Supabase (solo lectura, clave anon pública)
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-  // Obtener todas las propiedades con los campos necesarios
   console.log('📡  Obteniendo propiedades desde Supabase…')
 
   const { data: properties, error } = await supabase
@@ -228,8 +239,8 @@ async function main() {
   }
 
   console.log(`✅  ${properties.length} propiedades encontradas.`)
-  console.log(`📁  Directorio de salida: ${PREVIEW_DIR}`)
-  console.log('─'.repeat(55))
+  console.log(`📁  Generando en: ${PUBLIC_PREVIEW_DIR}`)
+  console.log(sep)
 
   let generated = 0
   let errors    = 0
@@ -237,22 +248,28 @@ async function main() {
   for (const property of properties) {
     try {
       const html     = buildHTML(property)
-      const filePath = path.join(PREVIEW_DIR, `${property.id}.html`)
+      const filePath = path.join(PUBLIC_PREVIEW_DIR, `${property.id}.html`)
       fs.writeFileSync(filePath, html, 'utf-8')
       console.log(`  ✓  /preview/${property.id}.html  →  "${property.title || 'Sin título'}"`)
       generated++
     } catch (err) {
-      console.error(`  ✗  Error generando preview para id=${property.id}:`, err.message)
+      console.error(`  ✗  Error en id=${property.id}:`, err.message)
       errors++
     }
   }
 
-  console.log('─'.repeat(55))
-  console.log(`🎉  Listo: ${generated} archivos generados${errors ? `, ${errors} errores` : ''}.`)
-  console.log()
-  console.log('💡  Para compartir en WhatsApp/Facebook usa URLs tipo:')
-  console.log(`    ${SITE_URL}/preview/<id>.html`)
-  console.log()
+  console.log(sep)
+  console.log(`🎉  ${generated} archivos generados en /public/preview${errors ? `, ${errors} errores` : ''}.`)
+
+  // Intentar copiar a dist/ si ya existe (ej: ejecución manual post-build)
+  if (fs.existsSync(path.join(ROOT_DIR, 'dist'))) {
+    copyToDistPreview()
+  } else {
+    console.log()
+    console.log('ℹ️   /dist aún no existe — los archivos serán incluidos por Vite')
+    console.log('    durante el build y copiados explícitamente en el postbuild.')
+    console.log()
+  }
 }
 
 main()

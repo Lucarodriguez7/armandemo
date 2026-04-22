@@ -7,6 +7,7 @@
     "dev": "vite --port=3000 --host=0.0.0.0",
     "prebuild": "node scripts/generate-previews.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/generate-previews.mjs --copy-to-dist",
     "preview": "vite preview",
     "generate-previews": "node scripts/generate-previews.mjs",
     "clean": "rm -rf dist",
