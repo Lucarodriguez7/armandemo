@@ -79,10 +79,13 @@ function buildHTML(property) {
   const id          = property.id
   const title       = property.title || `Propiedad #${id}`
   const description = buildDescription(property)
-  // ⚠️ Imagen fija para máxima compatibilidad con WhatsApp:
-  // Las URLs dinámicas de Supabase Storage pueden fallar por headers,
-  // redirects o formatos no soportados por el crawler de WhatsApp.
-  const imageUrl    = `${SITE_URL}/og-default.jpg`
+  // Imagen dinámica de la propiedad con fallback a og-default.jpg.
+  // Solo se acepta HTTPS para garantizar compatibilidad con WhatsApp
+  // (el crawler de WA rechaza URLs HTTP o con redirects de protocolo).
+  const rawImage = getMainImageUrl(property.images)
+  const imageUrl = (rawImage && rawImage.startsWith('https'))
+    ? rawImage
+    : `${SITE_URL}/og-default.jpg`
   const pageUrl     = `${SITE_URL}/propiedades/${id}`
   const previewUrl  = `${SITE_URL}/preview/${id}.html`
   const currency    = property.operation?.toLowerCase() === 'alquiler' ? 'ARS' : 'USD'
