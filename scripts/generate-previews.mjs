@@ -26,13 +26,8 @@ import { fileURLToPath } from 'url'
 
 const SUPABASE_URL = 'https://nnybfkvrruukkfprjzew.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ueWJma3ZycnV1a2tmcHJqemV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDkzMTIsImV4cCI6MjA4ODM4NTMxMn0.jeq9Vul3ENr9Rx8fuY3v_dZkOe4Kg6ShjW56Eqbg5dU'
-
-// Endpoint de transformación de Supabase (resize, compresión, <300KB)
-const STORAGE_RENDER = 'https://nnybfkvrruukkfprjzew.supabase.co/storage/v1/render/image/public/properties/'
-const IMG_PARAMS     = '?width=600&height=315&resize=contain&format=origin'
-
-// Trailing slash eliminado para evitar doble // al concatenar rutas
-const SITE_URL = (process.env.SITE_URL || 'https://armanpropiedades.com').replace(/\/$/, '')
+const STORAGE_URL  = 'https://nnybfkvrruukkfprjzew.supabase.co/storage/v1/render/image/public/properties/'
+const SITE_URL     = (process.env.SITE_URL || 'https://armanpropiedades.com').replace(/\/$/, '')
 
 // ─── Rutas ────────────────────────────────────────────────────────────────────
 
@@ -47,25 +42,21 @@ function getMainImageUrl(imagesField) {
   if (!imagesField) return null
   let imgs = []
   try {
-    if (Array.isArray(imagesField))           imgs = imagesField
+    if (Array.isArray(imagesField))        imgs = imagesField
     else if (typeof imagesField === 'string') imgs = JSON.parse(imagesField)
   } catch {
     imgs = [imagesField]
   }
   if (!imgs.length) return null
-  const first = String(imgs[0]).trim()
-
-  // Si es una URL completa de Supabase Storage (object), la convertimos al
-  // endpoint render/image que aplica resize y compresión automáticas.
-  if (first.includes('/storage/v1/object/public/')) {
-    return first.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + IMG_PARAMS
+  let first = imgs[0]
+  if (first.startsWith('http')) {
+    if (first.includes('/storage/v1/object/public/')) {
+      first = first.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
+      return `${first}?width=600&height=315&resize=contain`
+    }
+    return first
   }
-
-  // Si ya es una URL render o cualquier otra HTTPS externa, la usamos tal cual.
-  if (first.startsWith('https://')) return first
-
-  // Es solo un nombre de archivo → construimos la URL de render completa.
-  return `${STORAGE_RENDER}${encodeURIComponent(first)}${IMG_PARAMS}`
+  return `${STORAGE_URL}${encodeURIComponent(first)}?width=600&height=315&resize=contain`
 }
 
 function buildDescription(property) {
@@ -109,40 +100,59 @@ function buildHTML(property) {
     : ''
   const fullTitle   = price ? `${title} · ${price}` : title
 
-  // Sin salto de línea inicial — evita el error 206 Partial Content en crawlers
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- og:image primero: WhatsApp/Facebook leen los primeros 300KB del HTML -->
-<meta property="og:image"            content="${escapeHtml(imageUrl)}">
-<meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
-<meta property="og:image:type"       content="image/jpeg">
-<meta property="og:image:width"      content="600">
-<meta property="og:image:height"     content="315">
-<meta property="og:image:alt"        content="${escapeHtml(fullTitle)}">
-<meta property="og:title"            content="${escapeHtml(fullTitle)}">
-<meta property="og:description"      content="${escapeHtml(description)}">
-<meta property="og:type"             content="article">
-<meta property="og:url"              content="${escapeHtml(previewUrl)}">
-<meta property="og:site_name"        content="Arman Propiedades">
-<meta property="og:locale"           content="es_AR">
-<meta name="twitter:card"            content="summary_large_image">
-<meta name="twitter:title"           content="${escapeHtml(fullTitle)}">
-<meta name="twitter:description"     content="${escapeHtml(description)}">
-<meta name="twitter:image"           content="${escapeHtml(imageUrl)}">
-<meta name="description"             content="${escapeHtml(description)}">
-<link rel="canonical"                href="${escapeHtml(pageUrl)}">
-<title>${escapeHtml(fullTitle)}</title>
-<script>window.location.replace("${pageUrl}");</script>
-<noscript><meta http-equiv="refresh" content="0;url=${pageUrl}"></noscript>
-<style>body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.card{text-align:center;max-width:480px;padding:2rem}.spinner{width:40px;height:40px;border:4px solid #334155;border-top-color:#f59e0b;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.5rem}@keyframes spin{to{transform:rotate(360deg)}}a{color:#f59e0b}</style>
+  <meta charset="UTF-8" />
+  <meta property="og:image"             content="${escapeHtml(imageUrl)}" />
+  <meta property="og:title"             content="${escapeHtml(fullTitle)}" />
+  <meta property="og:description"       content="${escapeHtml(description)}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(fullTitle)}</title>
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type"              content="article" />
+  <meta property="og:site_name"         content="Arman Propiedades" />
+  <meta property="og:url"               content="${escapeHtml(previewUrl)}" />
+  <meta property="og:image:secure_url"  content="${escapeHtml(imageUrl)}" />
+  <meta property="og:image:type"        content="image/jpeg" />
+  <meta property="og:image:width"       content="600" />
+  <meta property="og:image:height"      content="315" />
+  <meta property="og:image:alt"         content="${escapeHtml(fullTitle)}" />
+  <meta property="og:locale"            content="es_AR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="${escapeHtml(fullTitle)}" />
+  <meta name="twitter:description" content="${escapeHtml(description)}" />
+  <meta name="twitter:image"       content="${escapeHtml(imageUrl)}" />
+
+  <!-- SEO -->
+  <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="canonical" href="${escapeHtml(pageUrl)}" />
+
+  <!-- Redirección para navegadores humanos (crawlers no ejecutan JS) -->
+  <script>window.location.replace("${pageUrl}");</script>
+  <noscript><meta http-equiv="refresh" content="0; url=${pageUrl}" /></noscript>
+
+  <style>
+    body{font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;
+      display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+    .card{text-align:center;max-width:480px;padding:2rem}
+    .spinner{width:40px;height:40px;border:4px solid #334155;border-top-color:#f59e0b;
+      border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    a{color:#f59e0b}
+  </style>
 </head>
 <body>
-<div class="card"><div class="spinner"></div><p>Redirigiendo…</p><p><a href="${pageUrl}">Clic aquí si no fuiste redirigido/a.</a></p></div>
+  <div class="card">
+    <div class="spinner"></div>
+    <p>Redirigiendo a la propiedad…</p>
+    <p><a href="${pageUrl}">Hacer clic aquí si no fuiste redirigido/a.</a></p>
+  </div>
 </body>
-</html>`
+</html>`.trim()
 }
 
 // ─── Función: copiar public/preview → dist/preview ───────────────────────────
