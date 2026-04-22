@@ -79,7 +79,10 @@ function buildHTML(property) {
   const id          = property.id
   const title       = property.title || `Propiedad #${id}`
   const description = buildDescription(property)
-  const imageUrl    = getMainImageUrl(property.images) || `${SITE_URL}/og-default.jpg`
+  // ⚠️ Imagen fija para máxima compatibilidad con WhatsApp:
+  // Las URLs dinámicas de Supabase Storage pueden fallar por headers,
+  // redirects o formatos no soportados por el crawler de WhatsApp.
+  const imageUrl    = `${SITE_URL}/og-default.jpg`
   const pageUrl     = `${SITE_URL}/propiedades/${id}`
   const previewUrl  = `${SITE_URL}/preview/${id}.html`
   const currency    = property.operation?.toLowerCase() === 'alquiler' ? 'ARS' : 'USD'
@@ -96,15 +99,18 @@ function buildHTML(property) {
   <title>${escapeHtml(fullTitle)}</title>
 
   <!-- Open Graph / Facebook / WhatsApp -->
-  <meta property="og:type"         content="article" />
-  <meta property="og:site_name"    content="Arman Propiedades" />
-  <meta property="og:url"          content="${escapeHtml(previewUrl)}" />
-  <meta property="og:title"        content="${escapeHtml(fullTitle)}" />
-  <meta property="og:description"  content="${escapeHtml(description)}" />
-  <meta property="og:image"        content="${escapeHtml(imageUrl)}" />
-  <meta property="og:image:width"  content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:locale"       content="es_AR" />
+  <meta property="og:type"              content="article" />
+  <meta property="og:site_name"         content="Arman Propiedades" />
+  <meta property="og:url"               content="${escapeHtml(previewUrl)}" />
+  <meta property="og:title"             content="${escapeHtml(fullTitle)}" />
+  <meta property="og:description"       content="${escapeHtml(description)}" />
+  <meta property="og:image"             content="${escapeHtml(imageUrl)}" />
+  <meta property="og:image:secure_url"  content="${escapeHtml(imageUrl)}" />
+  <meta property="og:image:type"        content="image/jpeg" />
+  <meta property="og:image:width"       content="1200" />
+  <meta property="og:image:height"      content="630" />
+  <meta property="og:image:alt"         content="${escapeHtml(fullTitle)}" />
+  <meta property="og:locale"            content="es_AR" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
