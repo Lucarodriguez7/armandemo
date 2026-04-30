@@ -1,311 +1,416 @@
-import React, { useRef, useEffect, ReactNode } from "react"
-import {
-  MapPin, ArrowRight, ShieldCheck, TreePine, Star, Sun, Mountain,
-  Home, Compass, Phone,
-} from "lucide-react"
-import { motion } from "framer-motion"
+import React from "react";
+import { motion } from "framer-motion";
+import { Phone } from "lucide-react";
 
-/* ─── SECTION REVEAL HOOK ──────────────────────────────────── */
-function useSectionReveal(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { el.classList.add("in-view"); obs.disconnect() } },
-      { threshold }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [threshold])
-  return ref
-}
-
-/* ─── GLOBAL STYLES ────────────────────────────────────────── */
+/* ─── INLINE STYLES FOR FONTS & VARIABLES ────────────────────────── */
 const FontStyle: React.FC = () => (
   <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap');
+
     :root {
-      --emerald:       #2D7D5F;
-      --emerald-light: #5DAE8B;
-      --emerald-dark:  #1B5E43;
-      --cream:         #FAF8F4;
-      --dark:          #1A1F1C;
-      --muted:         #6B7B72;
-      --border:        rgba(45,125,95,0.2);
-      --gold:          #C9A96E;
-      --gold-light:    #E8D5B0;
+      --gold: #C0A062;
+      --gold-dark: #9A7B46;
+      --dark-bg: #141414;
+      --darker-bg: #0A0A0A;
+      --light-bg: #F5F4F0;
+      --text-gray: #A3A3A3;
+      --border-color: rgba(192, 160, 98, 0.3);
     }
-    html, body { overflow-x: hidden; max-width: 100%; }
-    *, *::before, *::after { box-sizing: border-box; }
-    .font-display { font-family: 'Cormorant Garamond', serif; }
-    .font-body    { font-family: 'Jost', sans-serif; }
-    .font-pinyon  { font-family: 'Pinyon Script', cursive; font-weight: 400; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+    
+    .font-jost { font-family: 'Jost', sans-serif; }
+    
+    /* Stats Bar separator */
+    .stat-divider {
+      position: relative;
     }
-    @keyframes scrollBounce {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(8px); }
-    }
-
-    .reveal {
-      opacity: 0;
-      animation-fill-mode: both;
-      animation-duration: 0.6s;
-      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .in-view .reveal               { animation-name: fadeUp; }
-    .reveal[data-delay="1"]        { animation-delay: 0.08s; }
-    .reveal[data-delay="2"]        { animation-delay: 0.16s; }
-    .reveal[data-delay="3"]        { animation-delay: 0.24s; }
-    .reveal[data-delay="4"]        { animation-delay: 0.32s; }
-
-    .hero-pv-bg {
-      position: absolute; inset: 0;
-      background-image: url('/portal-valparaiso.png');
-      background-size: cover; background-position: center;
-      will-change: transform; transform: translateZ(0);
+    .stat-divider:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 20%;
+      height: 60%;
+      width: 1px;
+      background-color: rgba(255, 255, 255, 0.1);
     }
 
-    .emerald-divider {
-      width: 60px; height: 1px;
-      background: linear-gradient(to right, transparent, var(--emerald), transparent);
-      margin: 0 auto;
-    }
-    .section-inner-pv { width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+    /* Table styles for Ficha Técnica */
+    .ficha-row:nth-child(even) { background-color: rgba(0,0,0,0.03); }
+    .ficha-row:nth-child(odd) { background-color: transparent; }
 
-    .info-card-pv {
-      background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 32px 24px;
-      transition: box-shadow 0.3s ease, transform 0.3s ease; transform: translateZ(0);
-    }
-    .info-card-pv:hover { transform: translateY(-6px) translateZ(0); box-shadow: 0 24px 60px rgba(0,0,0,0.1); }
-
-    .feature-card-pv {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(45,125,95,0.15);
-      border-radius: 16px; padding: 28px 24px; transition: border-color 0.3s, background 0.3s;
-    }
-    .feature-card-pv:hover { border-color: rgba(45,125,95,0.4); background: rgba(45,125,95,0.06); }
-
-    .scroll-line-pv { width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(255,255,255,0.5), transparent); animation: scrollBounce 1.5s ease-in-out infinite; }
-
-    @media (max-width: 768px) {
-      .pv-page-root { overflow-x: hidden; width: 100%; }
-      .pv-page-root * { max-width: 100%; }
-      .section-inner-pv { padding: 0 18px; }
-      .section-pad-pv   { padding: 64px 0 !important; }
-      .pv-stats-grid    { grid-template-columns: 1fr 1fr !important; gap: 28px !important; }
-      .pv-hero-text     { padding: 0 18px !important; max-width: 100% !important; width: 100% !important; }
-      .pv-hero-title    { font-size: clamp(72px, 18vw, 100px) !important; }
-      .pv-hero-badge    { font-size: 10px !important; letter-spacing: 0.08em !important; }
-      .pv-hero-buttons  { flex-direction: column !important; gap: 12px !important; }
-      .pv-hero-buttons a { width: 100% !important; justify-content: center !important; }
-      .pv-info-grid     { grid-template-columns: 1fr !important; }
+    .gold-gradient-text {
+      background: linear-gradient(to right, var(--gold), #E6D0A7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
   `}</style>
-)
+);
 
-/* ─── TYPES ────────────────────────────────────────────────── */
-interface InfoCard { icon: ReactNode; title: string; text: string }
-interface FeatureCard { icon: ReactNode; title: string; desc: string }
+/* ─── ANIMATION VARIANTS ─────────────────────────────────────────── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
+};
 
-/* ─── MAIN COMPONENT ───────────────────────────────────────── */
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+  },
+};
+
+/* ─── MAIN COMPONENT ─────────────────────────────────────────────── */
 const PortalValparaiso: React.FC = () => {
-  const whatsappLink = "https://wa.me/5493515052474"
-
-  const infoRef     = useSectionReveal(0.15)
-  const featuresRef = useSectionReveal(0.1)
-  const ctaRef      = useSectionReveal(0.2)
-  const locationRef = useSectionReveal(0.15)
-
-  const infoCards: InfoCard[] = [
-    { icon: <Mountain size={20} />,    title: "Entorno serrano",           text: "Rodeado de sierras con vistas panorámicas, aire puro y la tranquilidad que solo la naturaleza puede ofrecer." },
-    { icon: <Sun size={20} />,         title: "Lotes amplios",             text: "Parcelas desde 600 m² hasta más de 1.500 m², diseñados para construir la casa de tus sueños." },
-    { icon: <ShieldCheck size={20} />, title: "Seguridad 24/7",            text: "Acceso controlado, vigilancia permanente y perímetro cerrado para la tranquilidad de toda la familia." },
-    { icon: <TreePine size={20} />,    title: "Espacios verdes",           text: "Senderos peatonales, plazas, arbolado nativo y un masterplan paisajístico que respeta el entorno." },
-    { icon: <Home size={20} />,        title: "Infraestructura completa",  text: "Calles consolidadas, iluminación LED, red de agua, cloacas y gas natural desde el inicio." },
-    { icon: <Compass size={20} />,     title: "Ubicación estratégica",     text: "Conectividad directa con rutas principales, a minutos de centros urbanos y servicios esenciales." },
-  ]
-
-  const featureCards: FeatureCard[] = [
-    { icon: <Star size={20} />,        title: "Escritura inmediata",       desc: "Lotes con escritura individual desde el momento de la compra. Sin esperas, sin trámites complicados." },
-    { icon: <MapPin size={20} />,      title: "Plusvalía garantizada",     desc: "Zona de alto crecimiento con proyección de revalorización sostenida. Tu inversión crece año a año." },
-    { icon: <TreePine size={20} />,    title: "Vida al aire libre",        desc: "Club house, áreas deportivas, senderos y espacios de encuentro para disfrutar en comunidad." },
-    { icon: <ShieldCheck size={20} />, title: "Respaldo profesional",      desc: "Desarrollado por ARMAN Grupo Inmobiliario con trayectoria comprobada en proyectos de alta gama." },
-  ]
+  const whatsappLink = "https://wa.me/5493515052474";
 
   return (
-    <div className="font-body pv-page-root" style={{ background: "var(--cream)", color: "var(--dark)", overflowX: "hidden", width: "100%", position: "relative" }}>
+    <div className="font-jost w-full overflow-x-hidden bg-[var(--dark-bg)] text-white selection:bg-[var(--gold)] selection:text-white">
       <FontStyle />
 
-      {/* ══ HERO ══ */}
-      <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden", paddingTop: 72 }}>
-        <div style={{ position: "absolute", inset: 0, transform: "translateZ(0)" }}>
-          <div className="hero-pv-bg" />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(26,31,28,0.82) 0%, rgba(26,31,28,0.45) 60%, transparent 100%)", contain: "strict" }} />
+      {/* ══ HERO SECTION ══ */}
+      <section className="relative w-full h-screen flex flex-col justify-end pt-20">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[url('https://imgur.com/27L0XYP.png')] bg-cover bg-center bg-no-repeat" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--darker-bg)] via-[var(--darker-bg)]/60 to-black/30" />
         </div>
-        <motion.div className="pv-hero-text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}
-          style={{ position: "relative", zIndex: 2, maxWidth: 760, padding: "0 48px", width: "100%" }}>
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="pv-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(45,125,95,0.2)", border: "1px solid var(--emerald)", borderRadius: 40, padding: "6px 16px", marginBottom: 28, color: "var(--emerald-light)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            <Star size={10} fill="currentColor" /> Próximamente · Sierras de Córdoba
+
+        {/* Hero Content */}
+        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-6 text-center pb-24 md:pb-32">
+          <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+            <motion.p variants={fadeUp} className="text-[var(--gold)] text-xs md:text-sm tracking-[0.15em] font-medium uppercase mb-4">
+              Locales Comerciales en Alquiler · Zona Sur, Córdoba
+            </motion.p>
+            <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-[90px] leading-tight mb-2">
+              <span className="font-bold">PORTAL</span> <span className="font-light">VALPARAÍSO</span>
+            </motion.h1>
+            <motion.p variants={fadeUp} className="text-white/80 text-base md:text-lg font-light tracking-wide">
+              Av. Ciudad de Valparaíso · Zona Sur, Córdoba
+            </motion.p>
           </motion.div>
-          <motion.h1 className="font-pinyon pv-hero-title" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
-            style={{ fontFamily: "'Pinyon Script',cursive", fontSize: "clamp(72px,11vw,140px)", fontWeight: 400, color: "#fff", lineHeight: 0.9, marginBottom: 28 }}>
-            Portal <span style={{ color: "var(--emerald-light)" }}>Valparaíso</span>
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.22 }}
-            style={{ color: "rgba(255,255,255,0.75)", fontSize: "clamp(14px,2vw,18px)", lineHeight: 1.7, maxWidth: 480, marginBottom: 40, fontWeight: 300 }}>
-            Un desarrollo residencial exclusivo enmarcado en las sierras cordobesas. Lotes premium con vistas panorámicas, infraestructura completa y un entorno natural que redefine la calidad de vida.
-          </motion.p>
-          <motion.div className="pv-hero-buttons" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.34 }} style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-            <a href={whatsappLink} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "var(--emerald)", color: "#fff", padding: "16px 32px", borderRadius: 50, fontSize: 14, fontWeight: 500, letterSpacing: "0.06em", textDecoration: "none", transition: "all 0.25s", boxShadow: "0 8px 32px rgba(45,125,95,0.4)", whiteSpace: "nowrap" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(45,125,95,0.55)" }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 8px 32px rgba(45,125,95,0.4)" }}>
-              Solicitar información <ArrowRight size={16} />
-            </a>
-            <a href="#ubicacion" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", padding: "16px 32px", borderRadius: 50, fontSize: 14, fontWeight: 400, letterSpacing: "0.06em", textDecoration: "none", transition: "all 0.25s", whiteSpace: "nowrap" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.18)" }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)" }}>
-              Ver ubicación
-            </a>
-          </motion.div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }}
-          style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: "0.15em", zIndex: 2 }}>
-          <span style={{ textTransform: "uppercase" }}>Explorar</span>
-          <div className="scroll-line-pv" />
-        </motion.div>
-      </section>
-
-      {/* ══ INFO CARDS ══ */}
-      <section className="section-pad-pv" style={{ padding: "100px 0", background: "var(--cream)" }}>
-        <div className="section-inner-pv">
-          <div ref={infoRef}>
-            <div style={{ textAlign: "center", marginBottom: 64 }}>
-              <p className="reveal" style={{ color: "var(--emerald)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 16 }}>El proyecto</p>
-              <h2 className="reveal font-display" data-delay="1" style={{ fontSize: "clamp(28px,4vw,56px)", fontWeight: 400, lineHeight: 1.15, marginBottom: 16 }}>
-                Tu refugio en las<br /><em>sierras de Córdoba</em>
-              </h2>
-              <div className="reveal emerald-divider" data-delay="2" style={{ marginTop: 24 }} />
-            </div>
-            <div className="pv-info-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-              {infoCards.map((item, i) => (
-                <div key={i} className="info-card-pv reveal" data-delay={String((i % 4) + 1)}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(45,125,95,0.12)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--emerald)", marginBottom: 20 }}>{item.icon}</div>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>{item.title}</h3>
-                  <p style={{ color: "var(--muted)", fontSize: 14, lineHeight: 1.65 }}>{item.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
-      </section>
 
-      {/* ══ FEATURES ══ */}
-      <section className="section-pad-pv" style={{ padding: "100px 0", background: "var(--dark)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 60% 50%, rgba(45,125,95,0.07) 0%, transparent 65%)", pointerEvents: "none", contain: "strict" }} />
-        <div className="section-inner-pv" style={{ position: "relative", zIndex: 1 }}>
-          <div ref={featuresRef}>
-            <div style={{ marginBottom: 64 }}>
-              <p className="reveal" style={{ color: "var(--emerald-light)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 16 }}>¿Por qué Portal Valparaíso?</p>
-              <h2 className="reveal font-display" data-delay="1" style={{ fontSize: "clamp(28px,4vw,52px)", fontWeight: 300, color: "#fff", lineHeight: 1.1, marginBottom: 20 }}>
-                Invertí en un lugar<br /><em style={{ color: "var(--emerald-light)" }}>que crece con vos</em>
-              </h2>
-              <div className="reveal emerald-divider" data-delay="2" style={{ margin: "0 0 24px", background: "linear-gradient(to right, transparent, var(--emerald-light), transparent)" }} />
-              <p className="reveal" data-delay="3" style={{ color: "rgba(255,255,255,0.5)", fontSize: "clamp(14px,1.8vw,16px)", lineHeight: 1.8, maxWidth: 520 }}>
-                Portal Valparaíso combina la belleza natural de las sierras con infraestructura de primer nivel, creando un espacio ideal para vivir, descansar o invertir con proyección a futuro.
-              </p>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, marginTop: 48 }}>
-              {featureCards.map((item, i) => (
-                <div key={i} className="feature-card-pv reveal" data-delay={String((i % 4) + 1)}>
-                  <div style={{ width: 42, height: 42, borderRadius: 10, background: "rgba(45,125,95,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--emerald-light)", marginBottom: 16 }}>{item.icon}</div>
-                  <h3 style={{ color: "#fff", fontSize: 15, fontWeight: 500, marginBottom: 8 }}>{item.title}</h3>
-                  <p style={{ color: "rgba(255,255,255,0.42)", fontSize: 13, lineHeight: 1.7 }}>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══ STATS ══ */}
-      <section className="section-pad-pv" style={{ padding: "80px 0", background: "var(--dark)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 20% 50%, rgba(45,125,95,0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, rgba(45,125,95,0.04) 0%, transparent 60%)", contain: "strict" }} />
-        <div className="section-inner-pv" style={{ position: "relative", zIndex: 1 }}>
-          <div className="pv-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32, textAlign: "center" }}>
+        {/* Bottom Stats Bar */}
+        <div className="relative z-10 w-full bg-[var(--darker-bg)]/90 backdrop-blur-md border-t border-white/5">
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }} 
+            variants={staggerContainer}
+            className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 py-8 md:py-10"
+          >
             {[
-              { n: "600+", label: "m² lote mínimo" },
-              { n: "24/7", label: "Seguridad" },
-              { n: "15", label: "Min del centro" },
-              { n: "100%", label: "Infraestructura" },
-            ].map((s, i) => (
-              <div key={i}>
-                <div className="font-display" style={{ fontSize: "clamp(36px,4vw,64px)", fontWeight: 300, color: "var(--emerald-light)", lineHeight: 1 }}>
-                  {s.n}
-                </div>
-                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 8 }}>{s.label}</div>
-              </div>
+              { value: "6", label: "LOCALES" },
+              { value: "88,5 m²", label: "POR LOCAL" },
+              { value: "PASEO CUBIERTO", label: "FRENTE AL LOCAL" },
+              { value: "ESTAC. PRIVADO", label: "INCLUIDO" },
+            ].map((stat, idx) => (
+              <motion.div variants={fadeUp} key={idx} className="stat-divider flex flex-col items-center justify-center px-4 py-4 md:py-0 text-center group">
+                <div className="text-[var(--gold)] text-2xl md:text-3xl font-semibold mb-2 group-hover:scale-110 transition-transform duration-500">{stat.value}</div>
+                <div className="text-[10px] md:text-xs text-white/50 tracking-[0.2em] uppercase">{stat.label}</div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ══ UBICACIÓN ══ */}
-      <section id="ubicacion" className="section-pad-pv" style={{ padding: "100px 0", background: "var(--cream)" }}>
-        <div className="section-inner-pv">
-          <div ref={locationRef}>
-            <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <p className="reveal" style={{ color: "var(--emerald)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 16 }}>Ubicación</p>
-              <h2 className="reveal font-display" data-delay="1" style={{ fontSize: "clamp(28px,4vw,52px)", fontWeight: 400 }}>En el corazón de las <em>sierras</em></h2>
-            </div>
-            <div className="reveal" data-delay="2" style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginTop: 28 }}>
+      {/* ══ EL PROYECTO & FICHA TECNICA ══ */}
+      <section className="w-full flex flex-col lg:flex-row min-h-screen">
+        {/* Left Side (Dark) */}
+        <div className="w-full lg:w-[45%] bg-[var(--dark-bg)] p-10 md:p-16 lg:p-24 flex flex-col justify-center border-r border-white/5">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="max-w-md mx-auto lg:mx-0 lg:ml-auto">
+            <motion.h3 variants={fadeUp} className="text-[var(--gold)] text-xs tracking-[0.2em] uppercase font-semibold mb-6">
+              El Proyecto
+            </motion.h3>
+            <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-semibold text-white mb-6 leading-tight">
+              Portal <br /> Valparaíso
+            </motion.h2>
+            <motion.div variants={fadeUp} className="w-16 h-[1px] bg-[var(--gold)] mb-8" />
+
+            <motion.div variants={staggerContainer} className="space-y-6 text-[var(--text-gray)] font-light leading-relaxed text-[15px] mb-12">
+              <motion.p variants={fadeUp}>
+                Desarrollo comercial de categoría sobre Av. Ciudad de Valparaíso, zona sur de mayor crecimiento de Córdoba.
+              </motion.p>
+              <motion.p variants={fadeUp}>
+                Arquitectura industrial-premium: ladrillo visto, estructura metálica y paseo semi-cubierto.
+              </motion.p>
+              <motion.p variants={fadeUp}>
+                88,5 m² con patio privado, kitchenette, baño y estacionamiento propio.
+              </motion.p>
+            </motion.div>
+
+            {/* Feature Cards Grid */}
+            <motion.div variants={staggerContainer} className="grid grid-cols-2 gap-4">
               {[
-                { icon: <MapPin size={13} />, text: "Sierras de Córdoba" },
-                { icon: <Mountain size={13} />, text: "Vistas panorámicas" },
-                { icon: <TreePine size={13} />, text: "Entorno natural preservado" },
-              ].map((tag, i) => (
-                <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(45,125,95,0.1)", border: "1px solid var(--border)", borderRadius: 40, padding: "10px 18px", fontSize: 13, color: "var(--emerald-dark)", fontWeight: 500, whiteSpace: "nowrap" }}>
-                  {tag.icon} {tag.text}
-                </span>
+                { title: "PATIO PRIVADO", desc: "~62 m²" },
+                { title: "KITCHENETTE", desc: "Incluida" },
+                { title: "PASEO CUBIERTO", desc: "Uso común" },
+                { title: "ESTAC. PRIVADO", desc: "Frente al local" },
+              ].map((card, idx) => (
+                <motion.div key={idx} variants={fadeUp} className="border border-[var(--border-color)] rounded-xl p-5 flex flex-col justify-between hover:bg-white/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                  <span className="text-[var(--gold)] text-[10px] tracking-[0.1em] font-semibold mb-4">{card.title}</span>
+                  <span className="text-white/70 text-sm font-light">{card.desc}</span>
+                </motion.div>
               ))}
-            </div>
-            <p className="reveal" data-delay="3" style={{ textAlign: "center", color: "var(--muted)", fontSize: 14, marginTop: 32, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
-              Ubicación exacta disponible para interesados. Contactanos para coordinar una visita al terreno y conocer el proyecto en persona.
-            </p>
-          </div>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Right Side (Light) */}
+        <div className="w-full lg:w-[55%] bg-[var(--light-bg)] text-black p-10 md:p-16 lg:p-24 flex flex-col justify-center">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="max-w-xl mx-auto lg:mx-0">
+            <motion.h3 variants={fadeUp} className="text-[var(--gold-dark)] text-xs tracking-[0.2em] uppercase font-semibold mb-10">
+              Ficha Técnica
+            </motion.h3>
+
+            <motion.div variants={fadeUp} className="w-full flex flex-col text-[14px]">
+              {[
+                { label: "Proyecto", value: "Portal Valparaíso" },
+                { label: "Dirección", value: "Av. Cdad. de Valparaíso, Zona Sur" },
+                { label: "Locales disponibles", value: "6 unidades" },
+                { label: "Superficie por local", value: "88,5 m²" },
+                { label: "Frente al paseo", value: "4,40 m" },
+                { label: "Profundidad", value: "~15,18 m" },
+                { label: "Patio trasero", value: "~62 m² privado" },
+                { label: "Baño", value: "Completo, incluido" },
+                { label: "Kitchenette", value: "Incluida" },
+                { label: "Estacionamiento", value: "Privado frente al local" },
+                { label: "Paseo semi-cubierto", value: "Uso común" },
+                { label: "Fachada", value: "Ladrillo visto + acero" },
+                { label: "Carpintería", value: "Vidrio + marco metálico negro" },
+              ].map((row, idx) => (
+                <motion.div variants={fadeUp} key={idx} className="ficha-row flex justify-between py-4 px-4 border-b border-black/5 last:border-0 hover:bg-black/5 transition-colors duration-300 rounded-lg">
+                  <span className="text-black/50 font-light">{row.label}</span>
+                  <span className="font-medium text-black/80 text-right">{row.value}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ══ CTA FINAL ══ */}
-      <section className="section-pad-pv" style={{ padding: "100px 0", background: "var(--dark)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 50% 50%, rgba(45,125,95,0.08) 0%, transparent 65%)", contain: "strict" }} />
-        <div className="section-inner-pv" style={{ position: "relative", zIndex: 1 }}>
-          <div ref={ctaRef} style={{ textAlign: "center", maxWidth: 640, margin: "0 auto" }}>
-            <p className="reveal" style={{ color: "var(--emerald-light)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 20 }}>Reservá tu lote</p>
-            <h2 className="reveal font-display" data-delay="1" style={{ fontSize: "clamp(32px,5vw,60px)", fontWeight: 300, color: "#fff", lineHeight: 1.1, marginBottom: 24 }}>
-              Sé parte del<br /><em style={{ color: "var(--emerald-light)" }}>nuevo Valparaíso</em>
-            </h2>
-            <p className="reveal" data-delay="2" style={{ color: "rgba(255,255,255,0.5)", fontSize: "clamp(14px,1.8vw,16px)", lineHeight: 1.8, marginBottom: 40 }}>
-              Las pre-reservas están abiertas. Asegurá tu lugar en uno de los desarrollos más exclusivos de las sierras cordobesas. Contactanos hoy.
-            </p>
-            <div className="reveal" data-delay="3" style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
-              <a href={whatsappLink} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "var(--emerald)", color: "#fff", padding: "18px 36px", borderRadius: 50, fontSize: 15, fontWeight: 500, letterSpacing: "0.06em", textDecoration: "none", transition: "all 0.25s", boxShadow: "0 8px 32px rgba(45,125,95,0.4)", whiteSpace: "nowrap" }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(45,125,95,0.55)" }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 8px 32px rgba(45,125,95,0.4)" }}>
-                <Phone size={16} /> Hablar con un asesor
-              </a>
+      {/* ══ VISTAS DEL PROYECTO ══ */}
+      <section className="w-full bg-[var(--dark-bg)] pt-24 pb-12">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, margin: "-100px" }} 
+          variants={staggerContainer}
+          className="text-center mb-16 px-6"
+        >
+          <motion.h3 variants={fadeUp} className="text-[var(--gold)] text-xs md:text-sm tracking-[0.2em] uppercase font-semibold mb-4">
+            Vistas del Proyecto
+          </motion.h3>
+          <motion.h2 variants={fadeUp} className="text-3xl md:text-5xl font-semibold text-white mb-6">
+            Recorrido Visual
+          </motion.h2>
+          <motion.div variants={fadeUp} className="w-16 h-[1px] bg-[var(--gold)] mx-auto" />
+        </motion.div>
+
+        {/* Premium Image Gallery */}
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, margin: "-100px" }} 
+          variants={staggerContainer}
+          className="w-full max-w-[1400px] mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6"
+        >
+          {/* Image 1 - Large */}
+          <motion.div variants={fadeUp} className="md:col-span-7 relative aspect-[4/3] md:aspect-auto md:h-[600px] overflow-hidden rounded-2xl group cursor-pointer shadow-2xl">
+            <img src="https://imgur.com/fAl53Xw.jpg" alt="Vista 1" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-700" />
+            <div className="absolute bottom-0 left-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
+              <p className="text-[var(--gold)] text-xs tracking-[0.2em] uppercase font-semibold mb-2">Fachada Exterior</p>
+              <h4 className="text-white text-xl md:text-2xl font-medium drop-shadow-md">Arquitectura Premium</h4>
             </div>
-            <p className="reveal" data-delay="4" style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 32 }}>
-              Preventa exclusiva · Cupos limitados
-            </p>
+          </motion.div>
+
+          {/* Image 2 - Medium */}
+          <motion.div variants={fadeUp} className="md:col-span-5 relative aspect-[4/3] md:aspect-auto md:h-[600px] overflow-hidden rounded-2xl group cursor-pointer shadow-2xl">
+            <img src="https://imgur.com/LuJusNa.jpg" alt="Vista 2" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-700" />
+            <div className="absolute bottom-0 left-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
+              <p className="text-[var(--gold)] text-xs tracking-[0.2em] uppercase font-semibold mb-2">Paseo Comercial</p>
+              <h4 className="text-white text-xl md:text-2xl font-medium drop-shadow-md">Diseño Vanguardista</h4>
+            </div>
+          </motion.div>
+
+          {/* Image 3 - Small 1 */}
+          <motion.div variants={fadeUp} className="md:col-span-4 relative aspect-[4/3] md:h-[400px] overflow-hidden rounded-2xl group cursor-pointer shadow-2xl">
+            <img src="https://imgur.com/Dp5ymE7.jpg" alt="Vista 3" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700" />
+          </motion.div>
+
+          {/* Image 4 - Small 2 */}
+          <motion.div variants={fadeUp} className="md:col-span-4 relative aspect-[4/3] md:h-[400px] overflow-hidden rounded-2xl group cursor-pointer shadow-2xl">
+            <img src="https://imgur.com/iUPhXQO.jpg" alt="Vista 4" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700" />
+          </motion.div>
+
+          {/* Image 5 - Small 3 */}
+          <motion.div variants={fadeUp} className="md:col-span-4 relative aspect-[4/3] md:h-[400px] overflow-hidden rounded-2xl group cursor-pointer shadow-2xl">
+            <img src="https://imgur.com/nj0g5Uw.jpg" alt="Vista 5" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700" />
+          </motion.div>
+        </motion.div>
+
+        {/* Stats Bar */}
+        <div className="w-full bg-[var(--darker-bg)] border-t border-[var(--gold)]/20 mt-16">
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }} 
+            variants={staggerContainer}
+            className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 py-8 md:py-10"
+          >
+            {[
+              { value: "6", label: "Locales disponibles" },
+              { value: "88,5 m²", label: "Superficie por local" },
+              { value: "Paseo semi-cubierto", label: "Frente al local" },
+              { value: "+54 9 351 505-2474", label: "Consultas ARMAN", link: whatsappLink },
+            ].map((stat, idx) => (
+              <motion.div variants={fadeUp} key={idx} className="stat-divider flex flex-col items-center justify-center px-4 py-4 md:py-0 text-center group">
+                {stat.link ? (
+                  <a href={stat.link} target="_blank" rel="noreferrer" className="text-[var(--gold)] text-xl md:text-2xl font-semibold mb-2 group-hover:scale-110 group-hover:text-white transition-all duration-500">
+                    {stat.value}
+                  </a>
+                ) : (
+                  <div className="text-[var(--gold)] text-xl md:text-2xl font-semibold mb-2 group-hover:scale-110 transition-transform duration-500">{stat.value}</div>
+                )}
+                <div className="text-[10px] md:text-[11px] text-white/50 tracking-[0.1em]">{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══ DISTRIBUCION DE LOCALES ══ */}
+      <section className="w-full bg-[var(--light-bg)] pt-24 pb-0">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, margin: "-100px" }} 
+          variants={staggerContainer}
+          className="max-w-[1400px] mx-auto px-6 mb-12 flex flex-col md:flex-row md:items-end justify-between"
+        >
+          <div>
+            <motion.h3 variants={fadeUp} className="text-[var(--gold-dark)] text-xs tracking-[0.2em] uppercase font-semibold mb-2">
+              Planta Baja · Distribución y Ubicación de Lotes
+            </motion.h3>
+            <motion.h2 variants={fadeUp} className="text-3xl md:text-5xl font-semibold text-black mb-4 md:mb-0">
+              Plano General del Proyecto
+            </motion.h2>
           </div>
+        </motion.div>
+
+        <div className="w-full max-w-[1400px] mx-auto px-6 mb-16">
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: "-50px" }} 
+            variants={fadeUp}
+            className="w-full bg-white rounded-2xl border border-black/10 flex items-center justify-center relative overflow-hidden shadow-xl group"
+          >
+            <img 
+              src="https://imgur.com/YhMuIG1.jpg" 
+              alt="Plano de distribución de lotes" 
+              className="w-full h-auto object-contain group-hover:scale-[1.02] transition-transform duration-[2s] ease-out"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-700 pointer-events-none" />
+          </motion.div>
+        </div>
+
+        {/* Dark Bottom Stats Bar */}
+        <div className="w-full bg-[var(--darker-bg)]">
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }} 
+            variants={staggerContainer}
+            className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-5 py-8 md:py-10"
+          >
+            {[
+              { value: "6", label: "Locales", label2: "Comerciales" },
+              { value: "88,5 m²", label: "Superficie", label2: "por Local" },
+              { value: "~62 m²", label: "Patio Trasero", label2: "Privado" },
+              { value: "4,40 m", label: "Frente", label2: "al Paseo" },
+              { value: "19,00 m", label: "Longitud", label2: "Total" },
+            ].map((stat, idx) => (
+              <motion.div variants={fadeUp} key={idx} className="stat-divider flex flex-col items-center justify-center px-4 py-4 md:py-0 text-center group">
+                <div className="text-[var(--gold)] text-xl md:text-2xl font-semibold mb-3 group-hover:scale-110 transition-transform duration-500">{stat.value}</div>
+                <div className="text-[10px] md:text-[11px] text-white/50 tracking-[0.05em] font-light leading-tight">
+                  {stat.label} <br /> {stat.label2}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══ UBICACION ESTRATEGICA ══ */}
+      <section className="w-full relative bg-[var(--dark-bg)]">
+        {/* Top Image Half */}
+        <motion.div 
+          initial={{ opacity: 0 }} 
+          whileInView={{ opacity: 1 }} 
+          transition={{ duration: 1.5 }}
+          viewport={{ once: true }}
+          className="w-full h-[50vh] min-h-[400px] relative"
+        >
+          {/* Reusing one of the nice project renders for the map area since we don't have a map image, 
+              using the main facade image as an establishing shot */}
+          <div className="absolute inset-0 bg-[url('https://imgur.com/fAl53Xw.jpg')] bg-cover bg-center" style={{ backgroundAttachment: 'fixed' }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--dark-bg)] via-[var(--dark-bg)]/80 to-transparent" />
+        </motion.div>
+
+        <div className="relative z-10 max-w-[1000px] mx-auto px-6 -mt-20 pb-32 text-center">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}>
+            <motion.h3 variants={fadeUp} className="text-[var(--gold)] text-xs tracking-[0.2em] uppercase font-semibold mb-6">
+              Ubicación Estratégica
+            </motion.h3>
+            <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-semibold text-white mb-8">
+              Av. Ciudad de Valparaíso
+            </motion.h2>
+
+            <motion.div variants={fadeUp} className="flex items-center justify-center gap-4 mb-12">
+              <div className="h-[1px] w-12 bg-white/20" />
+              <span className="text-white/80 font-light text-lg tracking-wide">Zona Sur, Córdoba</span>
+              <div className="h-[1px] w-12 bg-white/20" />
+            </motion.div>
+
+            <motion.div variants={staggerContainer} className="max-w-[700px] mx-auto space-y-6 text-[var(--text-gray)] font-light leading-relaxed text-[15px] mb-20">
+              <motion.p variants={fadeUp}>
+                Corredor residencial y comercial consolidado en la Zona Sur de Córdoba.
+                Una de las áreas de mayor desarrollo y crecimiento de la ciudad,
+                con alta densidad de vivienda, colegios, comercios y acceso directo a Av. de Circunvalación.
+              </motion.p>
+              <motion.p variants={fadeUp}>
+                Alto flujo vehicular y peatonal constante. <br />
+                Público de perfil familiar, con fuerte poder adquisitivo.
+              </motion.p>
+            </motion.div>
+
+            {/* Outlined Features Grid */}
+            <motion.div variants={staggerContainer} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {[
+                { top: "ZONA SUR", line1: "Corredor de alto", line2: "crecimiento" },
+                { top: "PÚBLICO", line1: "Perfil familiar", line2: "poder adquisitivo" },
+                { top: "ACCESO", line1: "Circunvalación", line2: "a metros" },
+                { top: "ENTORNO", line1: "Residencial", line2: "consolidado" },
+              ].map((item, idx) => (
+                <motion.div key={idx} variants={fadeUp} className="border border-[var(--border-color)] rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-[var(--gold)]/10 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_10px_40px_rgba(192,160,98,0.15)] group">
+                  <span className="text-[var(--gold)] text-[9px] tracking-[0.15em] uppercase font-semibold mb-4 group-hover:scale-110 transition-transform duration-300">{item.top}</span>
+                  <span className="text-white font-medium text-sm leading-relaxed">{item.line1} <br /> {item.line2}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </div>
       </section>
     </div>
-  )
-}
+  );
+};
 
-export default PortalValparaiso
+export default PortalValparaiso;
+
+
