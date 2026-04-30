@@ -192,7 +192,7 @@ const staticPages = [
     path: '/proyectos/la-feliza',
     title: 'La Feliza | Arman Propiedades',
     description: 'Lotes desde 500m² en el corazón del Valle de Paravachasca. El lugar ideal para construir tu hogar o tu primera inversión.',
-    image: 'https://i.imgur.com/27L0XYPh.jpg'
+    image: 'https://i.imgur.com/pgVMN5Ch.jpg'
   },
   {
     path: '/proyectos/valle-del-tabaquillo',
