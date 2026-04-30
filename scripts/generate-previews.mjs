@@ -180,7 +180,7 @@ const staticPages = [
     path: '/',
     title: 'Arman Propiedades | Inversiones Inmobiliarias',
     description: 'Transformando la forma de conectar personas con propiedades. Encontrá la propiedad ideal con un servicio profesional, transparente y enfocado en resultados.',
-    image: 'https://i.imgur.com/27L0XYPh.jpg'
+    image: 'https://i.imgur.com/ZkqE97th.jpg'
   },
   {
     path: '/proyectos',
@@ -210,25 +210,25 @@ const staticPages = [
     path: '/propiedades',
     title: 'Catálogo de Propiedades | Arman Propiedades',
     description: 'Explorá nuestro catálogo de propiedades premium. Casas, departamentos, lotes y locales comerciales en Córdoba.',
-    image: 'https://i.imgur.com/27L0XYPh.jpg'
+    image: 'https://i.imgur.com/ZkqE97th.jpg'
   },
   {
     path: '/nosotros',
     title: 'Nosotros | Arman Propiedades',
     description: 'Conocé a Mariana Caramello y al equipo detrás de Arman Propiedades. Compromiso, transparencia y resultados.',
-    image: 'https://i.imgur.com/27L0XYPh.jpg'
+    image: 'https://i.imgur.com/ZkqE97th.jpg'
   },
   {
     path: '/contacto',
     title: 'Contacto | Arman Propiedades',
     description: 'Comunicate con nosotros para recibir asesoramiento personalizado en tus inversiones inmobiliarias.',
-    image: 'https://i.imgur.com/27L0XYPh.jpg'
+    image: 'https://i.imgur.com/ZkqE97th.jpg'
   },
   {
     path: '/consignacion',
     title: 'Vender mi Propiedad | Arman Propiedades',
     description: 'Dejanos tu propiedad para venderla con la mayor rentabilidad y un servicio de excelencia.',
-    image: 'https://i.imgur.com/27L0XYPh.jpg'
+    image: 'https://i.imgur.com/ZkqE97th.jpg'
   }
 ];
 
