@@ -30,7 +30,7 @@ const Proyectos = () => {
       tag: "Próximamente",
       location: "Sierras de Córdoba",
       desc: "Un exclusivo desarrollo residencial enmarcado en las sierras cordobesas, con lotes premium, vistas panorámicas y un entorno natural inigualable.",
-      image: "/portal-valparaiso.png",
+      image: "https://imgur.com/Dp5ymE7.png",
       path: "/proyectos/portal-valparaiso",
       aos: "fade-up"
     }
@@ -39,14 +39,14 @@ const Proyectos = () => {
   return (
     <div className="pt-28 md:pt-32 pb-20 overflow-x-hidden bg-white text-brand-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* HEADER - Estilo Minimalista */}
         <div className="mb-20" data-aos="fade-down">
           <span className="text-brand-accent font-bold uppercase tracking-widest text-xs mb-3 block">
             Portfolio Exclusivo
           </span>
           <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight mb-6">
-            Arquitectura que define <br /> 
+            Arquitectura que define <br />
             <span className="text-brand-primary/30 italic">un estilo de vida.</span>
           </h1>
           <p className="text-lg text-brand-secondary max-w-2xl leading-relaxed">
@@ -57,16 +57,16 @@ const Proyectos = () => {
         {/* LISTADO DE PROYECTOS - Full Width Cards */}
         <div className="space-y-16 md:space-y-24">
           {proyectos.map((proyecto, index) => (
-            <div 
-              key={proyecto.id} 
+            <div
+              key={proyecto.id}
               className={`flex flex-col ${index % 2 !== 0 ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-16 items-center group`}
               data-aos={proyecto.aos}
             >
               {/* IMAGEN CON EFECTO ZOOM */}
               <div className="w-full md:w-3/5 overflow-hidden rounded-3xl shadow-2xl relative">
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-700 z-10" />
-                <img 
-                  src={proyecto.image} 
+                <img
+                  src={proyecto.image}
                   alt={proyecto.title}
                   className="w-full h-[400px] md:h-[550px] object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out"
                 />
@@ -83,11 +83,11 @@ const Proyectos = () => {
                   <MapPin size={18} />
                   <span className="text-sm font-medium tracking-wide">{proyecto.location}</span>
                 </div>
-                
+
                 <h2 className="text-3xl md:text-5xl font-display font-bold group-hover:text-brand-accent transition-colors duration-300">
                   {proyecto.title}
                 </h2>
-                
+
                 <p className="text-brand-secondary text-lg leading-relaxed">
                   {proyecto.desc}
                 </p>
@@ -102,7 +102,7 @@ const Proyectos = () => {
                 </div>
 
                 <div className="pt-8">
-                  <Link 
+                  <Link
                     to={proyecto.path}
                     className="inline-flex items-center gap-4 bg-brand-primary text-white px-8 py-4 rounded-full font-bold hover:bg-brand-accent hover:shadow-xl transition-all duration-300 group/btn"
                   >
@@ -116,7 +116,7 @@ const Proyectos = () => {
         </div>
 
         {/* SECCIÓN FINAL - CTA */}
-        <div 
+        <div
           className="mt-32 bg-gray-50 rounded-[3rem] p-12 md:p-20 text-center border border-gray-100"
           data-aos="zoom-in"
         >
@@ -126,7 +126,7 @@ const Proyectos = () => {
           <p className="text-brand-secondary mb-10 max-w-xl mx-auto">
             Nuestro equipo técnico puede asesorarte sobre cuál de nuestros desarrollos se adapta mejor a tu perfil de inversión.
           </p>
-          <Link 
+          <Link
             to="/contacto"
             className="text-brand-primary font-bold border-b-2 border-brand-accent pb-1 hover:text-brand-accent transition-colors text-lg"
           >
