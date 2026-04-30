@@ -23,6 +23,16 @@ const Proyectos = () => {
       image: "https://imgur.com/50ifKba.jpg", // Cambia por la foto real de Valle del Tabaquillo
       path: "/proyectos/valle-del-tabaquillo",
       aos: "fade-up"
+    },
+    {
+      id: "portal-valparaiso",
+      title: "Portal Valparaíso",
+      tag: "Próximamente",
+      location: "Sierras de Córdoba",
+      desc: "Un exclusivo desarrollo residencial enmarcado en las sierras cordobesas, con lotes premium, vistas panorámicas y un entorno natural inigualable.",
+      image: "/portal-valparaiso.png",
+      path: "/proyectos/portal-valparaiso",
+      aos: "fade-up"
     }
   ]
 

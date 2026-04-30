@@ -41,6 +41,7 @@ export const Navbar = () => {
   const proyectos = [
     { name: "La Feliza", path: "/proyectos/la-feliza" },
     { name: "Valle del Tabaquillo", path: "/proyectos/valle-del-tabaquillo" },
+    { name: "Portal Valparaíso", path: "/proyectos/portal-valparaiso" },
   ];
 
   const navLinks = [
@@ -295,6 +296,7 @@ export const Footer = () => {
             <ul className="space-y-4 text-white/60 text-sm font-medium">
               <li><Link to="/proyectos/la-feliza" className="hover:text-white transition">La Feliza</Link></li>
               <li><Link to="/proyectos/valle-del-tabaquillo" className="hover:text-white transition">Valle del Tabaquillo</Link></li>
+              <li><Link to="/proyectos/portal-valparaiso" className="hover:text-white transition">Portal Valparaíso</Link></li>
             </ul>
           </div>
 

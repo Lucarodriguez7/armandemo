@@ -1,1 +1,5 @@
-/* /index.html 200
+# Serve preview files directly (not SPA fallback) for OG crawlers
+/preview/*  /preview/:splat  200!
+
+# SPA fallback for all other routes
+/*          /index.html     200

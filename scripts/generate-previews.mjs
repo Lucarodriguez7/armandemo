@@ -50,9 +50,27 @@ function getMainImageUrl(imagesField) {
   if (!imgs.length) return null
   let first = imgs[0]
   if (first.startsWith('http')) {
+    // Ensure the URL is properly encoded (fix spaces and special chars)
+    // Parse the URL to re-encode only the pathname, preserving query params
+    try {
+      const parsed = new URL(first)
+      // Re-encode the pathname segments to handle spaces, parens, etc.
+      parsed.pathname = parsed.pathname
+        .split('/')
+        .map(segment => encodeURIComponent(decodeURIComponent(segment)))
+        .join('/')
+      first = parsed.toString()
+    } catch {
+      // If URL parsing fails, do basic encoding of spaces
+      first = first.replace(/ /g, '%20')
+    }
     if (first.includes('/storage/v1/object/public/')) {
       first = first.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
-      return `${first}?width=600&height=315&resize=contain`
+      return `${first}${first.includes('?') ? '&' : '?'}width=600&height=315&resize=contain`
+    }
+    // For render URLs, just add transform params if not already present
+    if (first.includes('/storage/v1/render/image/public/') && !first.includes('width=')) {
+      return `${first}${first.includes('?') ? '&' : '?'}width=600&height=315&resize=contain`
     }
     return first
   }
@@ -185,6 +203,16 @@ function copyToDistPreview() {
   // Crear dist/preview
   fs.mkdirSync(DIST_PREVIEW_DIR, { recursive: true })
 
+  // Limpiar archivos huérfanos en dist/preview que ya no existen en public/preview
+  const sourceFiles = new Set(htmlFiles)
+  const distFiles = fs.readdirSync(DIST_PREVIEW_DIR).filter(f => f.endsWith('.html'))
+  for (const file of distFiles) {
+    if (!sourceFiles.has(file)) {
+      fs.unlinkSync(path.join(DIST_PREVIEW_DIR, file))
+      console.log(`  🗑️  Eliminado preview huérfano en dist: ${file}`)
+    }
+  }
+
   let copied = 0
   let errors = 0
 
@@ -254,6 +282,20 @@ async function main() {
 
   console.log(`✅  ${properties.length} propiedades encontradas.`)
   console.log(`📁  Generando en: ${PUBLIC_PREVIEW_DIR}`)
+  console.log(sep)
+
+  // ── Limpiar previews huérfanos (propiedades eliminadas) ──────────────────
+  const activeIds = new Set(properties.map(p => `${p.id}.html`))
+  const existingFiles = fs.readdirSync(PUBLIC_PREVIEW_DIR).filter(f => f.endsWith('.html'))
+  let cleaned = 0
+  for (const file of existingFiles) {
+    if (!activeIds.has(file)) {
+      fs.unlinkSync(path.join(PUBLIC_PREVIEW_DIR, file))
+      console.log(`  🗑️  Eliminado preview huérfano: /preview/${file}`)
+      cleaned++
+    }
+  }
+  if (cleaned) console.log(`  ℹ️  ${cleaned} previews huérfanos eliminados.`)
   console.log(sep)
 
   let generated = 0

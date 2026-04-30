@@ -20,6 +20,7 @@ import Contacto from './pages/Contacto'
 // Asegúrate de que estos archivos existan en tu carpeta /pages
 import LaFeliza from './pages/Lafeliza' 
 import ValleTabaquillo from './pages/ValledelTabaquillo'
+import PortalValparaiso from './pages/PortalValparaiso'
 
 // Páginas de Administración
 import Login from './pages/admin/login'
@@ -127,6 +128,7 @@ function PublicLayout() {
           <Route path="/proyectos" element={<Proyectos />} />
           <Route path="/proyectos/la-feliza" element={<LaFeliza />} />
           <Route path="/proyectos/valle-del-tabaquillo" element={<ValleTabaquillo />} />
+          <Route path="/proyectos/portal-valparaiso" element={<PortalValparaiso />} />
           
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/contacto" element={<Contacto />} />
