@@ -180,55 +180,55 @@ const staticPages = [
     path: '/',
     title: 'Arman Propiedades | Inversiones Inmobiliarias',
     description: 'Transformando la forma de conectar personas con propiedades. Encontrá la propiedad ideal con un servicio profesional, transparente y enfocado en resultados.',
-    image: 'https://imgur.com/uR00Y6Z.jpg'
+    image: 'https://i.imgur.com/uR00Y6Z.jpg'
   },
   {
     path: '/proyectos',
     title: 'Proyectos & Desarrollos | Arman Propiedades',
     description: 'Arquitectura que define un estilo de vida. Conocé nuestros exclusivos desarrollos residenciales y comerciales en Córdoba.',
-    image: 'https://imgur.com/27L0XYP.jpg'
+    image: 'https://i.imgur.com/27L0XYP.jpg'
   },
   {
     path: '/proyectos/la-feliza',
     title: 'La Feliza | Arman Propiedades',
     description: 'Lotes desde 500m² en el corazón del Valle de Paravachasca. El lugar ideal para construir tu hogar o tu primera inversión.',
-    image: 'https://imgur.com/27L0XYP.jpg'
+    image: 'https://i.imgur.com/27L0XYP.jpg'
   },
   {
     path: '/proyectos/valle-del-tabaquillo',
     title: 'Valle del Tabaquillo | Arman Propiedades',
     description: 'Lotes premium con vistas imponentes. Una inversión segura en el corazón de la naturaleza serrana.',
-    image: 'https://imgur.com/50ifKba.jpg'
+    image: 'https://i.imgur.com/50ifKba.jpg'
   },
   {
     path: '/proyectos/portal-valparaiso',
     title: 'Portal Valparaíso | Arman Propiedades',
     description: 'Desarrollo comercial de categoría sobre Av. Ciudad de Valparaíso. Locales comerciales premium con arquitectura de vanguardia.',
-    image: 'https://imgur.com/fAl53Xw.jpg'
+    image: 'https://i.imgur.com/fAl53Xw.jpg'
   },
   {
     path: '/propiedades',
     title: 'Catálogo de Propiedades | Arman Propiedades',
     description: 'Explorá nuestro catálogo de propiedades premium. Casas, departamentos, lotes y locales comerciales en Córdoba.',
-    image: 'https://imgur.com/uR00Y6Z.jpg'
+    image: 'https://i.imgur.com/uR00Y6Z.jpg'
   },
   {
     path: '/nosotros',
     title: 'Nosotros | Arman Propiedades',
     description: 'Conocé a Mariana Caramello y al equipo detrás de Arman Propiedades. Compromiso, transparencia y resultados.',
-    image: 'https://imgur.com/uR00Y6Z.jpg'
+    image: 'https://i.imgur.com/uR00Y6Z.jpg'
   },
   {
     path: '/contacto',
     title: 'Contacto | Arman Propiedades',
     description: 'Comunicate con nosotros para recibir asesoramiento personalizado en tus inversiones inmobiliarias.',
-    image: 'https://imgur.com/uR00Y6Z.jpg'
+    image: 'https://i.imgur.com/uR00Y6Z.jpg'
   },
   {
     path: '/consignacion',
     title: 'Vender mi Propiedad | Arman Propiedades',
     description: 'Dejanos tu propiedad para venderla con la mayor rentabilidad y un servicio de excelencia.',
-    image: 'https://imgur.com/uR00Y6Z.jpg'
+    image: 'https://i.imgur.com/uR00Y6Z.jpg'
   }
 ];
 
@@ -256,6 +256,9 @@ function prerenderStaticPages() {
     <meta property="og:description" content="${escapeHtml(page.description)}" />
     <meta property="og:image" content="${escapeHtml(page.image)}" />
     <meta property="og:image:secure_url" content="${escapeHtml(page.image)}" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:url" content="${escapeHtml(pageUrl)}" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arman Propiedades" />
