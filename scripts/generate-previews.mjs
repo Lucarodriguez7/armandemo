@@ -173,6 +173,122 @@ function buildHTML(property) {
 </html>`.trim()
 }
 
+// ─── Función: Prerenderizado de páginas estáticas (OG Tags en /dist) ──────────
+
+const staticPages = [
+  {
+    path: '/',
+    title: 'Arman Propiedades | Inversiones Inmobiliarias',
+    description: 'Transformando la forma de conectar personas con propiedades. Encontrá la propiedad ideal con un servicio profesional, transparente y enfocado en resultados.',
+    image: 'https://imgur.com/uR00Y6Z.jpg'
+  },
+  {
+    path: '/proyectos',
+    title: 'Proyectos & Desarrollos | Arman Propiedades',
+    description: 'Arquitectura que define un estilo de vida. Conocé nuestros exclusivos desarrollos residenciales y comerciales en Córdoba.',
+    image: 'https://imgur.com/27L0XYP.jpg'
+  },
+  {
+    path: '/proyectos/la-feliza',
+    title: 'La Feliza | Arman Propiedades',
+    description: 'Lotes desde 500m² en el corazón del Valle de Paravachasca. El lugar ideal para construir tu hogar o tu primera inversión.',
+    image: 'https://imgur.com/27L0XYP.jpg'
+  },
+  {
+    path: '/proyectos/valle-del-tabaquillo',
+    title: 'Valle del Tabaquillo | Arman Propiedades',
+    description: 'Lotes premium con vistas imponentes. Una inversión segura en el corazón de la naturaleza serrana.',
+    image: 'https://imgur.com/50ifKba.jpg'
+  },
+  {
+    path: '/proyectos/portal-valparaiso',
+    title: 'Portal Valparaíso | Arman Propiedades',
+    description: 'Desarrollo comercial de categoría sobre Av. Ciudad de Valparaíso. Locales comerciales premium con arquitectura de vanguardia.',
+    image: 'https://imgur.com/fAl53Xw.jpg'
+  },
+  {
+    path: '/propiedades',
+    title: 'Catálogo de Propiedades | Arman Propiedades',
+    description: 'Explorá nuestro catálogo de propiedades premium. Casas, departamentos, lotes y locales comerciales en Córdoba.',
+    image: 'https://imgur.com/uR00Y6Z.jpg'
+  },
+  {
+    path: '/nosotros',
+    title: 'Nosotros | Arman Propiedades',
+    description: 'Conocé a Mariana Caramello y al equipo detrás de Arman Propiedades. Compromiso, transparencia y resultados.',
+    image: 'https://imgur.com/uR00Y6Z.jpg'
+  },
+  {
+    path: '/contacto',
+    title: 'Contacto | Arman Propiedades',
+    description: 'Comunicate con nosotros para recibir asesoramiento personalizado en tus inversiones inmobiliarias.',
+    image: 'https://imgur.com/uR00Y6Z.jpg'
+  },
+  {
+    path: '/consignacion',
+    title: 'Vender mi Propiedad | Arman Propiedades',
+    description: 'Dejanos tu propiedad para venderla con la mayor rentabilidad y un servicio de excelencia.',
+    image: 'https://imgur.com/uR00Y6Z.jpg'
+  }
+];
+
+function prerenderStaticPages() {
+  const sep = '─'.repeat(55)
+  console.log()
+  console.log('📄  Prerenderizando tags Open Graph para páginas estáticas…')
+  console.log(sep)
+
+  const distDir = path.join(ROOT_DIR, 'dist')
+  const indexHtmlPath = path.join(distDir, 'index.html')
+
+  if (!fs.existsSync(indexHtmlPath)) {
+    console.warn('⚠️   No se encontró /dist/index.html. Saltando prerender.')
+    return
+  }
+
+  const baseHtml = fs.readFileSync(indexHtmlPath, 'utf-8')
+
+  for (const page of staticPages) {
+    const pageUrl = `${SITE_URL}${page.path === '/' ? '' : page.path}`
+    const metaTags = `
+    <!-- Dynamic Open Graph Tags -->
+    <meta property="og:title" content="${escapeHtml(page.title)}" />
+    <meta property="og:description" content="${escapeHtml(page.description)}" />
+    <meta property="og:image" content="${escapeHtml(page.image)}" />
+    <meta property="og:image:secure_url" content="${escapeHtml(page.image)}" />
+    <meta property="og:url" content="${escapeHtml(pageUrl)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arman Propiedades" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(page.title)}" />
+    <meta name="twitter:description" content="${escapeHtml(page.description)}" />
+    <meta name="twitter:image" content="${escapeHtml(page.image)}" />
+    <title>${escapeHtml(page.title)}</title>`
+
+    let newHtml = baseHtml
+    if (newHtml.includes('<title>Arman Propiedades</title>')) {
+      newHtml = newHtml.replace('<title>Arman Propiedades</title>', metaTags.trim())
+    } else {
+      newHtml = newHtml.replace('</head>', `  ${metaTags.trim()}\n</head>`)
+    }
+
+    try {
+      if (page.path === '/') {
+        fs.writeFileSync(indexHtmlPath, newHtml, 'utf-8')
+        console.log(`  ✓  / (Home)`)
+      } else {
+        const dirPath = path.join(distDir, page.path.slice(1))
+        fs.mkdirSync(dirPath, { recursive: true })
+        fs.writeFileSync(path.join(dirPath, 'index.html'), newHtml, 'utf-8')
+        console.log(`  ✓  ${page.path}`)
+      }
+    } catch (err) {
+      console.error(`  ✗  Error prerenderizando ${page.path}:`, err.message)
+    }
+  }
+  console.log(sep)
+}
+
 // ─── Función: copiar public/preview → dist/preview ───────────────────────────
 
 function copyToDistPreview() {
@@ -249,8 +365,9 @@ async function main() {
 
   // ── MODO: solo copiar (postbuild) ────────────────────────────────────────
   if (copyOnly) {
-    console.log('📋  Arman Propiedades — Postbuild: copia previews a /dist')
+    console.log('📋  Arman Propiedades — Postbuild: copia previews y prerenderiza rutas')
     copyToDistPreview()
+    prerenderStaticPages()
     return
   }
 
@@ -320,6 +437,7 @@ async function main() {
   // Intentar copiar a dist/ si ya existe (ej: ejecución manual post-build)
   if (fs.existsSync(path.join(ROOT_DIR, 'dist'))) {
     copyToDistPreview()
+    prerenderStaticPages()
   } else {
     console.log()
     console.log('ℹ️   /dist aún no existe — los archivos serán incluidos por Vite')
