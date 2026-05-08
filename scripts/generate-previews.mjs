@@ -66,34 +66,129 @@ function getMainImageUrl(imagesField) {
     }
     if (first.includes('/storage/v1/object/public/')) {
       first = first.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')
-      return `${first}${first.includes('?') ? '&' : '?'}width=600&height=315&resize=contain`
+      return `${first}${first.includes('?') ? '&' : '?'}width=600&height=315&resize=contain&quality=80`
     }
     // For render URLs, just add transform params if not already present
     if (first.includes('/storage/v1/render/image/public/') && !first.includes('width=')) {
-      return `${first}${first.includes('?') ? '&' : '?'}width=600&height=315&resize=contain`
+      return `${first}${first.includes('?') ? '&' : '?'}width=600&height=315&resize=contain&quality=80`
     }
     return first
   }
-  return `${STORAGE_URL}${encodeURIComponent(first)}?width=600&height=315&resize=contain`
+  return `${STORAGE_URL}${encodeURIComponent(first)}?width=600&height=315&resize=contain&quality=80`
 }
 
-function buildDescription(property) {
-  if (property.description && property.description.trim().length > 10) {
-    return property.description.trim().slice(0, 160).replace(/\r?\n/g, ' ')
+/**
+ * Detecta el MIME type de la imagen basado en la extensión del archivo.
+ */
+function getImageMimeType(imageUrl) {
+  if (!imageUrl) return 'image/jpeg'
+  const lower = imageUrl.toLowerCase()
+  if (lower.includes('.png')) return 'image/png'
+  if (lower.includes('.webp')) return 'image/webp'
+  if (lower.includes('.gif')) return 'image/gif'
+  return 'image/jpeg'
+}
+
+/**
+ * Trunca texto inteligentemente: nunca corta a mitad de palabra ni de oración.
+ * Busca el último punto, coma o espacio antes de maxLen para cortar limpiamente.
+ */
+function smartTruncate(text, maxLen = 155) {
+  if (!text || text.length <= maxLen) return text
+
+  // Intentar cortar en un punto seguido de espacio (fin de oración)
+  const truncated = text.slice(0, maxLen)
+  const lastPeriod = truncated.lastIndexOf('. ')
+  if (lastPeriod > maxLen * 0.4) {
+    return truncated.slice(0, lastPeriod + 1)
   }
-  const parts = []
-  if (property.operation) parts.push(property.operation)
-  if (property.type)      parts.push(property.type)
-  if (property.area)      parts.push(`${property.area} m²`)
-  if (property.bedrooms)  parts.push(`${property.bedrooms} hab.`)
-  if (property.bathrooms) parts.push(`${property.bathrooms} baños`)
-  if (property.city)      parts.push(`en ${property.city}`)
-  return parts.join(' · ') || 'Propiedad en Arman Propiedades'
+
+  // Si no hay punto, cortar en el último espacio para no romper palabras
+  const lastSpace = truncated.lastIndexOf(' ')
+  if (lastSpace > maxLen * 0.4) {
+    return truncated.slice(0, lastSpace) + '…'
+  }
+
+  return truncated + '…'
 }
 
-function escapeHtml(str) {
+/**
+ * Genera una descripción premium y legible para cada propiedad.
+ * Combina tipo, operación, habitaciones, zona y ciudad en una frase
+ * natural y profesional para la vista previa de WhatsApp/Facebook.
+ */
+function buildDescription(property) {
+  const clean = (str) => str ? str.trim().replace(/\r?\n/g, ' ').replace(/\s+/g, ' ') : ''
+
+  // ── Si la propiedad tiene descripción en la DB, hacemos un resumen limpio ──
+  if (property.description && property.description.trim().length > 20) {
+    const raw = clean(property.description)
+    return smartTruncate(raw, 155)
+  }
+
+  // ── Fallback: generar una descripción automática premium ──────────────────
+  const type      = property.type || 'Propiedad'
+  const operation = property.operation || ''
+  const city      = property.city || ''
+  const zone      = property.zone || ''
+  const bedrooms  = property.bedrooms
+  const bathrooms = property.bathrooms
+  const area      = property.area
+
+  // Construir la frase principal
+  let main = ''
+  if (operation && type) {
+    const opLower = operation.toLowerCase()
+    const verb = opLower === 'alquiler' ? 'en Alquiler' : 'en Venta'
+    main = `${type} ${verb}`
+  } else {
+    main = type
+  }
+
+  // Agregar detalles
+  const details = []
+  if (bedrooms) details.push(`${bedrooms} dormitorio${bedrooms > 1 ? 's' : ''}`)
+  if (bathrooms) details.push(`${bathrooms} baño${bathrooms > 1 ? 's' : ''}`)
+  if (area) details.push(`${area} m²`)
+
+  if (details.length > 0) {
+    main += ` de ${details.join(', ')}`
+  }
+
+  // Ubicación
+  const location = [zone, city].filter(Boolean).join(', ')
+  if (location) {
+    main += ` en ${location}`
+  }
+
+  // Cierre profesional
+  main += '. Arman Propiedades — Inversiones inmobiliarias de categoría.'
+
+  return main
+}
+
+/**
+ * Escapa texto para usar dentro de atributos HTML (content="…").
+ * IMPORTANTE: NO escapamos & a &amp; en URLs de imagen porque WhatsApp
+ * lee los atributos content="" de forma literal. En su lugar, usamos
+ * escapeAttr solo para texto, y para URLs usamos escapeUrl.
+ */
+function escapeText(str) {
   return String(str)
     .replace(/&/g,  '&amp;')
+    .replace(/"/g,  '&quot;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+}
+
+/**
+ * Escapa URLs para usar dentro de atributos HTML content="…".
+ * Solo escapa comillas dobles (que romperían el atributo HTML).
+ * NO escapa & porque WhatsApp/Facebook leen el contenido del atributo
+ * de forma literal y necesitan & real para parsear query strings.
+ */
+function escapeUrl(str) {
+  return String(str)
     .replace(/"/g,  '&quot;')
     .replace(/</g,  '&lt;')
     .replace(/>/g,  '&gt;')
@@ -110,6 +205,7 @@ function buildHTML(property) {
   const imageUrl = (rawImage && rawImage.startsWith('https'))
     ? rawImage
     : `${SITE_URL}/og-default.jpg`
+  const imageMime   = getImageMimeType(imageUrl)
   const pageUrl     = `${SITE_URL}/propiedades/${id}`
   const previewUrl  = `${SITE_URL}/preview/${id}.html`
   const currency    = property.operation?.toLowerCase() === 'alquiler' ? 'ARS' : 'USD'
@@ -122,32 +218,32 @@ function buildHTML(property) {
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta property="og:image"             content="${escapeHtml(imageUrl)}" />
-  <meta property="og:title"             content="${escapeHtml(fullTitle)}" />
-  <meta property="og:description"       content="${escapeHtml(description)}" />
+  <meta property="og:image"             content="${escapeUrl(imageUrl)}" />
+  <meta property="og:title"             content="${escapeText(fullTitle)}" />
+  <meta property="og:description"       content="${escapeText(description)}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(fullTitle)}</title>
+  <title>${escapeText(fullTitle)}</title>
 
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type"              content="article" />
   <meta property="og:site_name"         content="Arman Propiedades" />
-  <meta property="og:url"               content="${escapeHtml(previewUrl)}" />
-  <meta property="og:image:secure_url"  content="${escapeHtml(imageUrl)}" />
-  <meta property="og:image:type"        content="image/jpeg" />
+  <meta property="og:url"               content="${escapeUrl(previewUrl)}" />
+  <meta property="og:image:secure_url"  content="${escapeUrl(imageUrl)}" />
+  <meta property="og:image:type"        content="${imageMime}" />
   <meta property="og:image:width"       content="600" />
   <meta property="og:image:height"      content="315" />
-  <meta property="og:image:alt"         content="${escapeHtml(fullTitle)}" />
+  <meta property="og:image:alt"         content="${escapeText(fullTitle)}" />
   <meta property="og:locale"            content="es_AR" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="${escapeHtml(fullTitle)}" />
-  <meta name="twitter:description" content="${escapeHtml(description)}" />
-  <meta name="twitter:image"       content="${escapeHtml(imageUrl)}" />
+  <meta name="twitter:title"       content="${escapeText(fullTitle)}" />
+  <meta name="twitter:description" content="${escapeText(description)}" />
+  <meta name="twitter:image"       content="${escapeUrl(imageUrl)}" />
 
   <!-- SEO -->
-  <meta name="description" content="${escapeHtml(description)}" />
-  <link rel="canonical" href="${escapeHtml(pageUrl)}" />
+  <meta name="description" content="${escapeText(description)}" />
+  <link rel="canonical" href="${escapeUrl(pageUrl)}" />
 
   <!-- Redirección para navegadores humanos (crawlers no ejecutan JS) -->
   <script>window.location.replace("${pageUrl}");</script>
@@ -167,7 +263,7 @@ function buildHTML(property) {
   <div class="card">
     <div class="spinner"></div>
     <p>Redirigiendo a la propiedad…</p>
-    <p><a href="${pageUrl}">Hacer clic aquí si no fuiste redirigido/a.</a></p>
+    <p><a href="${pageUrl}">Hacer clic aquí si no fuiste redirigido.</a></p>
   </div>
 </body>
 </html>`.trim()
@@ -250,23 +346,25 @@ function prerenderStaticPages() {
 
   for (const page of staticPages) {
     const pageUrl = `${SITE_URL}${page.path === '/' ? '' : page.path}`
+    // NOTA: Para páginas estáticas las imágenes son URLs simples de imgur
+    // sin query params, así que escapeText funciona bien aquí.
     const metaTags = `
     <!-- Dynamic Open Graph Tags -->
-    <meta property="og:title" content="${escapeHtml(page.title)}" />
-    <meta property="og:description" content="${escapeHtml(page.description)}" />
-    <meta property="og:image" content="${escapeHtml(page.image)}" />
-    <meta property="og:image:secure_url" content="${escapeHtml(page.image)}" />
+    <meta property="og:title" content="${escapeText(page.title)}" />
+    <meta property="og:description" content="${escapeText(page.description)}" />
+    <meta property="og:image" content="${escapeUrl(page.image)}" />
+    <meta property="og:image:secure_url" content="${escapeUrl(page.image)}" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:url" content="${escapeHtml(pageUrl)}" />
+    <meta property="og:url" content="${escapeUrl(pageUrl)}" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Arman Propiedades" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${escapeHtml(page.title)}" />
-    <meta name="twitter:description" content="${escapeHtml(page.description)}" />
-    <meta name="twitter:image" content="${escapeHtml(page.image)}" />
-    <title>${escapeHtml(page.title)}</title>`
+    <meta name="twitter:title" content="${escapeText(page.title)}" />
+    <meta name="twitter:description" content="${escapeText(page.description)}" />
+    <meta name="twitter:image" content="${escapeUrl(page.image)}" />
+    <title>${escapeText(page.title)}</title>`
 
     let newHtml = baseHtml
     if (newHtml.includes('<title>Arman Propiedades</title>')) {
@@ -426,7 +524,12 @@ async function main() {
       const html     = buildHTML(property)
       const filePath = path.join(PUBLIC_PREVIEW_DIR, `${property.id}.html`)
       fs.writeFileSync(filePath, html, 'utf-8')
-      console.log(`  ✓  /preview/${property.id}.html  →  "${property.title || 'Sin título'}"`)
+
+      // Log detallado con validación de imagen
+      const rawImage = getMainImageUrl(property.images)
+      const hasImage = rawImage && rawImage.startsWith('https')
+      const imgStatus = hasImage ? '🖼️' : '⚠️  sin imagen'
+      console.log(`  ✓  /preview/${property.id}.html  →  "${property.title || 'Sin título'}"  ${imgStatus}`)
       generated++
     } catch (err) {
       console.error(`  ✗  Error en id=${property.id}:`, err.message)
