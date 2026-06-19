@@ -282,7 +282,7 @@ Abrir en Google Maps
 {locationText}
 </div>
 
-<ShareButton propertyId={property.id} />
+<ShareButton propertyId={property.id} propertyTitle={property.title} />
 
 </div>
 
